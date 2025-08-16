@@ -39,32 +39,17 @@ __repo__ = "https://github.com/relic-se/CircuitPython_USB_Host_Gamepad.git"
 
 import keypad
 from micropython import const
+import struct
 import time
 import usb.core
+from usb.util import SPEED_HIGH
 
 import adafruit_usb_host_descriptors
 
-# Gamepad button bitmask constants
-
-UP     = const(0x0001)  # dpad: Up
-DOWN   = const(0x0002)  # dpad: Down
-LEFT   = const(0x0004)  # dpad: Left
-RIGHT  = const(0x0008)  # dpad: Right
-START  = const(0x0010)
-SELECT = const(0x0020)
-L      = const(0x0100)  # Left shoulder button
-R      = const(0x0200)  # Right shoulder button
-B      = const(0x1000)  # button cluster: bottom button (Nintendo B, Xbox A)
-A      = const(0x2000)  # button cluster: right button  (Nintendo A, Xbox B)
-Y      = const(0x4000)  # button cluster: left button   (Nintendo Y, Xbox X)
-X      = const(0x8000)  # button cluster: top button    (Nintendo X, Xbox Y)
-
-KEYS = (
-    UP, DOWN, LEFT, RIGHT,
-    START, SELECT,
-    L, R,
-    B, A, Y, X,
-)
+MAX_TIMEOUTS       = const(99)
+SEARCH_DELAY       = const(1)
+TRIGGER_THRESHOLD  = const(128)
+JOYSTICK_THRESHOLD = const(8192)
 
 # USB detected device types
 
@@ -100,8 +85,203 @@ DEVICE_NAMES = (
     (DEVICE_TYPE_POWERA_WIRED, "PowerA Wired Controller"),
 )
 
-MAX_TIMEOUTS = const(99)
-SEARCH_DELAY = const(1)
+BUTTON_NAMES = (
+    "A", "B", "X", "Y",
+    "Up", "Down", "Left", "Right",
+    "Start", "Select", "Home",
+    "L1", "R1", "L2", "R2", "L3", "R3",
+    "Joystick Up", "Joystick Down", "Joystick Left", "Joystick Right",
+)
+
+class Button:
+
+    A              = const(0)
+    B              = const(1)
+    X              = const(2)
+    Y              = const(3)
+    UP             = const(4)
+    DOWN           = const(5)
+    LEFT           = const(6)
+    RIGHT          = const(7)
+    START          = const(8)
+    SELECT         = const(9)
+    HOME           = const(10)
+    L1             = const(11)
+    R1             = const(12)
+    L2             = const(13)
+    R2             = const(14)
+    L3             = const(15)
+    R3             = const(16)
+    JOYSTICK_UP    = const(17)
+    JOYSTICK_DOWN  = const(18)
+    JOYSTICK_LEFT  = const(19)
+    JOYSTICK_RIGHT = const(20)
+
+    def __init__(self, value:int, pressed:bool=False):
+        assert self.A <= value <= self.JOYSTICK_RIGHT
+        self._value = value
+        self._pressed = pressed
+        self._changed = False
+    
+    def __str__(self) -> str:
+        return " ".join((
+            BUTTON_NAMES[self._value],
+            "Pressed" if self._pressed else "Released"
+        ))
+
+    def __eq__(self, other) -> bool:
+        if type(other) is int:
+            return self._value == other
+        else:
+            return self._value == other._value
+    
+    @property
+    def value(self) -> int:
+        return self._value
+    
+    @property
+    def pressed(self) -> bool:
+        return self._pressed
+    
+    @pressed.setter
+    def pressed(self, value:bool) -> None:
+        self._changed = self._pressed != value
+        self._pressed = value
+    
+    @property
+    def released(self) -> bool:
+        return not self._pressed
+    
+    @released.setter
+    def released(self, value:bool) -> None:
+        self.pressed = not value
+
+    @property
+    def changed(self) -> bool:
+        return self._changed
+
+class Buttons:
+    
+    def __init__(self):
+        self.A               = Button(Button.A)
+        self.B               = Button(Button.B)
+        self.X               = Button(Button.X)
+        self.Y               = Button(Button.Y)
+        self.UP              = Button(Button.UP)
+        self.DOWN            = Button(Button.DOWN)
+        self.LEFT            = Button(Button.LEFT)
+        self.RIGHT           = Button(Button.RIGHT)
+        self.START           = Button(Button.START)
+        self.SELECT          = Button(Button.SELECT)
+        self.HOME            = Button(Button.HOME)
+        self.L1              = Button(Button.L1)
+        self.R1              = Button(Button.R1)
+        self.L2              = Button(Button.L2)
+        self.R2              = Button(Button.R2)
+        self.L3              = Button(Button.L3)
+        self.R3              = Button(Button.R3)
+        self.JOYSTICK_UP     = Button(Button.JOYSTICK_UP)
+        self.JOYSTICK_DOWN   = Button(Button.JOYSTICK_DOWN)
+        self.JOYSTICK_LEFT   = Button(Button.JOYSTICK_LEFT)
+        self.JOYSTICK_RIGHT  = Button(Button.JOYSTICK_RIGHT)
+
+    def __iter__(self):
+        for x in dir(self):
+            if not x.startswith('__') and type(button := getattr(self, x)) is Button:
+                yield button
+
+    def get_changed(self) -> tuple:
+        return tuple([x for x in self if x.changed])
+    
+    def is_changed(self) -> bool:
+        try:
+            next((x for x in self if x.changed))
+        except StopIteration:
+            return False
+        finally:
+            return True
+
+class GamepadState:
+
+    def __init__(self):
+        self._buttons = Buttons()
+        self.reset()
+
+    @property
+    def buttons(self) -> Buttons:
+        return self._buttons
+    
+    @property
+    def left_trigger(self) -> float:
+        return self._left_trigger / 255
+        
+    @left_trigger.setter
+    def left_trigger(self, value:int|float) -> None:
+        if type(value) is float:
+            value = int(value * 255)
+        self._left_trigger = min(max(value, 0), 255)
+        self._buttons.L2.pressed = self._left_trigger >= TRIGGER_THRESHOLD
+    
+    @property
+    def right_trigger(self) -> float:
+        return self._right_trigger / 255
+        
+    @right_trigger.setter
+    def right_trigger(self, value:int|float) -> None:
+        if type(value) is float:
+            value = int(value * 255)
+        self._right_trigger = min(max(value, 0), 255)
+        self._buttons.R2.pressed = self._right_trigger >= TRIGGER_THRESHOLD
+    
+    @property
+    def left_joystick(self) -> tuple:
+        return (self._left_joystick_x / 32768, self._left_joystick_y / 32768)
+    
+    @left_joystick.setter
+    def left_joystick(self, value:tuple) -> None:
+        if len(value) != 2:
+            raise ValueError("value must be in the format of (x, y)")
+        
+        x, y = value
+        if type(x) is float:
+            x = int(x * 32767)
+        if type(y) is float:
+            y = int(y * 32767)
+        self._left_joystick_x = min(max(x, -32768), 32767)
+        self._left_joystick_y = min(max(y, -32768), 32767)
+
+        self._buttons.JOYSTICK_RIGHT.pressed = self._left_joystick_x >= JOYSTICK_THRESHOLD
+        self._buttons.JOYSTICK_LEFT.pressed  = self._left_joystick_x <= -JOYSTICK_THRESHOLD
+        self._buttons.JOYSTICK_UP.pressed    = self._left_joystick_y >= JOYSTICK_THRESHOLD
+        self._buttons.JOYSTICK_DOWN.pressed  = self._left_joystick_y <= -JOYSTICK_THRESHOLD
+    
+    @property
+    def right_joystick(self) -> tuple:
+        return (self._right_joystick_x / 32768, self._right_joystick_y / 32768)
+    
+    @right_joystick.setter
+    def right_joystick(self, value:tuple) -> None:
+        if len(value) != 2:
+            raise ValueError("value must be in the format of (x, y)")
+        
+        x, y = value
+        if type(x) is float:
+            x = int(x * 32767)
+        if type(y) is float:
+            y = int(y * 32767)
+
+        self._right_joystick_x = min(max(x, -32768), 32767)
+        self._right_joystick_y = min(max(y, -32768), 32767)
+    
+    def reset(self) -> None:
+        for button in self._buttons:
+            button.pressed = False
+        self._left_trigger = 0
+        self._right_trigger = 0
+        self._left_joystick_x = 0
+        self._left_joystick_y = 0
+        self._right_joystick_x = 0
+        self._right_joystick_y = 0
 
 class Descriptor:
 
@@ -311,15 +491,20 @@ class Device:
             device.detach_kernel_driver(interface)
 
         # set configuration
+        if self._debug:
+            print("set configuration:", self._configuration.value)
         device.set_configuration(self._configuration.value)
 
         self._max_packet_size = min(64, max(self._in_endpoint.max_packet_size, self._out_endpoint.max_packet_size))
         self._report = bytearray(self._max_packet_size)
         self._previous_report = bytearray(self._max_packet_size)
 
-        # read idle state
-        count = self.read()
-        self._idle_report = self._report[:count]
+        # Low-speed & Full-speed: max time between polling requests = interval * 1 ms
+        # High-speed: max time between polling requests = math.pow(2, bInterval-1) * 125 µs
+        self._interval = max(self._in_endpoint.interval, self._out_endpoint.interval)
+        if device.speed == SPEED_HIGH:
+            self._interval = (2 << (self._interval - 1)) >> 3
+        self._timestamp = time.monotonic()
 
     @property
     def device_id(self) -> tuple:
@@ -337,19 +522,28 @@ class Device:
     def led(self, value:int) -> None:
         self._led = value
 
-    def read_state(self) -> int:
-        packet_size = self.read()
-        if report_equals(self._report, self._previous_report, packet_size) or report_equals(self._report, self._idle_report, packet_size):
-            return
-        self._previous_report = self._report[:]
-        return self._get_state()
+    def read_state(self, state:GamepadState) -> bool:
+        if (current_time := time.monotonic()) - self._timestamp < self._interval / 1000:
+            return False
+        self._timestamp = current_time
 
-    def _get_state(self) -> int:
-        return 0
+        packet_size = self.read()
+        if not packet_size or report_equals(self._report, self._previous_report, packet_size):
+            return False
+        self._previous_report = self._report[:]
+
+        if self._debug:
+            print("report:", self._report[:packet_size])
+        
+        self._update_state(state)
+        return True
+
+    def _update_state(self) -> None:
+        pass
     
     def write(self, data:bytearray, acknowledge:bool = True) -> bool:
         try:
-            self._device.write(self._out_endpoint.address, data, timeout=self._out_endpoint.interval)
+            self._device.write(self._out_endpoint.address, data, timeout=self._interval)
             if not acknowledge:
                 return True
         except usb.core.USBTimeoutError:
@@ -365,7 +559,7 @@ class Device:
         return False
     
     def read(self) -> tuple:
-        count = self._device.read(self._in_endpoint.address, self._report, timeout=self._in_endpoint.interval)
+        count = self._device.read(self._in_endpoint.address, self._report, timeout=self._interval)
         return count
     
     def flush(self) -> None:
@@ -407,21 +601,19 @@ class SwitchProDevice(Device):
                 msg[len(msg)-1] |= 1 << i
         self.write(msg)
 
-    def _get_state(self) -> int:
-        state = 0
-        state |= Y      if self._report[2] & 0x01 else 0
-        state |= X      if self._report[2] & 0x02 else 0
-        state |= B      if self._report[2] & 0x04 else 0
-        state |= A      if self._report[2] & 0x08 else 0
-        state |= R      if self._report[2] & 0x40 else 0
-        state |= SELECT if self._report[3] & 0x01 else 0
-        state |= START  if self._report[3] & 0x02 else 0
-        state |= DOWN   if self._report[4] & 0x01 else 0
-        state |= UP     if self._report[4] & 0x02 else 0
-        state |= RIGHT  if self._report[4] & 0x04 else 0
-        state |= LEFT   if self._report[4] & 0x08 else 0
-        state |= L      if self._report[4] & 0x40 else 0
-        return state
+    def _update_state(self, state:GamepadState) -> None:
+        state.buttons.Y.pressed      = bool(self._report[2] & 0x01)
+        state.buttons.X.pressed      = bool(self._report[2] & 0x02)
+        state.buttons.B.pressed      = bool(self._report[2] & 0x04)
+        state.buttons.A.pressed      = bool(self._report[2] & 0x08)
+        state.buttons.R1.pressed     = bool(self._report[2] & 0x40)
+        state.buttons.SELECT.pressed = bool(self._report[3] & 0x01)
+        state.buttons.START.pressed  = bool(self._report[3] & 0x02)
+        state.buttons.DOWN.pressed   = bool(self._report[4] & 0x01)
+        state.buttons.UP.pressed     = bool(self._report[4] & 0x02)
+        state.buttons.RIGHT.pressed  = bool(self._report[4] & 0x04)
+        state.buttons.LEFT.pressed   = bool(self._report[4] & 0x08)
+        state.buttons.L1.pressed     = bool(self._report[4] & 0x40)
 
 class XInputDevice(Device):
     def __init__(self, device:usb.core.Device, device_descriptor:DeviceDescriptor=None, debug:bool=False):
@@ -441,21 +633,32 @@ class XInputDevice(Device):
                 msg[len(msg)-1] |= 1 << (1 - i)
         self.write(msg)
 
-    def _get_state(self) -> int:
-        state = 0
-        state |= LEFT   if self._report[0] == 0x00 else 0
-        state |= RIGHT  if self._report[0] == 0xff else 0
-        state |= UP     if self._report[1] == 0x00 else 0
-        state |= DOWN   if self._report[1] == 0xff else 0
-        state |= A      if self._report[5] == 0x2f else 0
-        state |= B      if self._report[5] == 0x4f else 0
-        state |= X      if self._report[5] == 0x1f else 0
-        state |= Y      if self._report[5] == 0x8f else 0
-        state |= L      if self._report[6] == 0x01 else 0
-        state |= R      if self._report[6] == 0x02 else 0
-        state |= SELECT if self._report[6] == 0x10 else 0
-        state |= START  if self._report[6] == 0x20 else 0
-        return state
+    def _update_state(self, state:GamepadState) -> None:
+        state.buttons.UP.pressed     = bool(self._report[2] & 0x01)
+        state.buttons.DOWN.pressed   = bool(self._report[2] & 0x02)
+        state.buttons.LEFT.pressed   = bool(self._report[2] & 0x04)
+        state.buttons.RIGHT.pressed  = bool(self._report[2] & 0x08)
+        state.buttons.START.pressed  = bool(self._report[2] & 0x10)
+        state.buttons.SELECT.pressed = bool(self._report[2] & 0x20)
+        state.buttons.L1.pressed     = bool(self._report[3] & 0x01)
+        state.buttons.R1.pressed     = bool(self._report[3] & 0x02)
+        state.buttons.HOME.pressed   = bool(self._report[3] & 0x04)
+        state.buttons.B.pressed      = bool(self._report[3] & 0x10)
+        state.buttons.A.pressed      = bool(self._report[3] & 0x20)
+        state.buttons.Y.pressed      = bool(self._report[3] & 0x40)
+        state.buttons.X.pressed      = bool(self._report[3] & 0x80)
+
+        state.left_trigger  = self._report[4]
+        state.right_trigger = self._report[5]
+
+        state.left_joystick = (
+            struct.unpack('h', self._report[6:8])[0],  # x
+            struct.unpack('h', self._report[8:10])[0], # y
+        )
+        state.right_joystick = (
+            struct.unpack('h', self._report[10:12])[0], # x
+            struct.unpack('h', self._report[12:14])[0], # y
+        )
 
 connected_devices = []
 failed_devices = []
@@ -467,7 +670,7 @@ def find_device(port:int=None, debug:bool=False) -> Device:
 
     for device in usb.core.find(find_all=True):
         device_id = (device.idVendor, device.idProduct)
-        if device_id in connected_devices or device_id in failed_devices:
+        if (port,) + device_id in connected_devices or device_id in failed_devices:
             continue
 
         if port is not None:
@@ -510,7 +713,7 @@ def find_device(port:int=None, debug:bool=False) -> Device:
             # set player led (if supported)
             device.led = port
 
-            connected_devices.append(device_id)
+            connected_devices.append((port,) + device_id)
             return device
         except ValueError:
             if debug:
@@ -527,39 +730,41 @@ class Gamepad:
         self._debug = debug
 
         self._device = None
-        self._state = 0
-        self._previous_state = 0
+        self._device_id = None
+        self._state = GamepadState()
         self._timeouts = 0
 
-        self._search_timestamp = 0
+        self._timestamp = time.monotonic() - SEARCH_DELAY
 
-    def update(self) -> tuple:
-        if self._device is None and time.monotonic() - self._search_timestamp >= SEARCH_DELAY:
+    def update(self) -> bool:
+        if self._device is None and time.monotonic() - self._timestamp >= SEARCH_DELAY:
             self._device = find_device(self._port, debug=self._debug)
-            self._search_timestamp = time.monotonic()
+            if self._device is not None:
+                self._device_id = self._device.device_id
+            self._timestamp = time.monotonic()
         if self._device is None:
-            return
+            return False
         
         try:
-            state = self._device.read_state()
-            if state is not None:
-                self._previous_state = self._state
-                self._state = state
+            return self._device.read_state(self._state)
         except usb.core.USBTimeoutError:
             self._timeouts += 1
             if self._timeouts > MAX_TIMEOUTS:
-                self.disconnect()
+                if self._debug:
+                    print("device exceeded max timeouts")
+                return self.disconnect()
         except usb.core.USBError:
-            self.disconnect()
+            if self._debug:
+                print("encountered error")
+            return self.disconnect()
+        return False
 
     @property
     def events(self) -> tuple:
-        self.update()
         events = []
-        if self._state != self._previous_state:
-            for key in KEYS:
-                if (self._state & key) ^ (self._previous_state & key):
-                    events.append(keypad.Event(key, self._state & key))
+        if self.update():
+            for button in self._state.buttons.get_changed():
+                events.append(keypad.Event(button.value, button.pressed))
         return tuple(events)
     
     @property
@@ -573,67 +778,39 @@ class Gamepad:
     @property
     def device_type(self) -> int:
         return DEVICE_TYPE_UNKNOWN
+
+    @property
+    def buttons(self) -> Buttons:
+        return self._state.buttons
     
     @property
-    def state(self) -> int:
-        return self._state
+    def left_trigger(self) -> float:
+        return self._state.left_trigger
     
     @property
-    def UP(self) -> bool:
-        return self._state & UP
+    def right_trigger(self) -> float:
+        return self._state.right_trigger
+        
+    @property
+    def left_joystick(self) -> tuple:
+        return self._state.left_joystick
     
     @property
-    def DOWN(self) -> bool:
-        return self._state & DOWN
+    def right_joystick(self) -> tuple:
+        return self._state.right_joystick
     
-    @property
-    def LEFT(self) -> bool:
-        return self._state & LEFT
-    
-    @property
-    def RIGHT(self) -> bool:
-        return self._state & RIGHT
-    
-    @property
-    def START(self) -> bool:
-        return self._state & START
-    
-    @property
-    def SELECT(self) -> bool:
-        return self._state & SELECT
-    
-    @property
-    def L(self) -> bool:
-        return self._state & L
-    
-    @property
-    def R(self) -> bool:
-        return self._state & R
-    
-    @property
-    def B(self) -> bool:
-        return self._state & B
-    
-    @property
-    def A(self) -> bool:
-        return self._state & A
-    
-    @property
-    def Y(self) -> bool:
-        return self._state & Y
-    
-    @property
-    def X(self) -> bool:
-        return self._state & X
-    
-    def disconnect(self) -> None:
+    def disconnect(self) -> bool:
         global connected_devices
-        if self._device is not None:
-            device_id = self._device.device_id
-            if device_id in connected_devices:
-                connected_devices.remove(self._device.device_id)
-            del self._device
-            self._device = None
-            self._state = 0
-            self._timeouts = 0
+        if self._device is None:
+            return False
+        if self._debug:
+            print("disconnecting from device:", self._device_id)
+        if (self._port,) + self._device_id in connected_devices:
+            connected_devices.remove((self._port,) + self._device_id)
+        del self._device
+        self._device = None
+        self._device_id = None
+        self._timeouts = 0
+        self._state.reset()
+        return True
     
