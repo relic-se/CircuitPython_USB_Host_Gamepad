@@ -87,10 +87,10 @@ DEVICE_NAMES = (
 
 BUTTON_NAMES = (
     "A", "B", "X", "Y",
-    "Up", "Down", "Left", "Right",
-    "Start", "Select", "Home",
+    "UP", "DOWN", "LEFT", "RIGHT",
+    "START", "SELECT", "HOME",
     "L1", "R1", "L2", "R2", "L3", "R3",
-    "Joystick Up", "Joystick Down", "Joystick Left", "Joystick Right",
+    "JOYSTICK_UP", "JOYSTICK_DOWN", "JOYSTICK_LEFT", "JOYSTICK_RIGHT",
 )
 
 class Button:
@@ -186,9 +186,14 @@ class Buttons:
         self.JOYSTICK_RIGHT  = Button(Button.JOYSTICK_RIGHT)
 
     def __iter__(self):
-        for x in dir(self):
-            if not x.startswith('__') and type(button := getattr(self, x)) is Button:
-                yield button
+        for x in BUTTON_NAMES:
+            yield getattr(self, x)
+
+    def __getitem__(self, index:int) -> Button:
+        return getattr(self, BUTTON_NAMES[index])
+
+    def __len__(self) -> int:
+        return len(BUTTON_NAMES)
 
     def get_changed(self) -> tuple:
         return tuple([x for x in self if x.changed])
