@@ -525,6 +525,8 @@ class Device:
     
     @led.setter
     def led(self, value:int) -> None:
+        if value is None:
+            value = 0
         self._led = value
 
     def read_state(self, state:GamepadState) -> bool:
@@ -599,6 +601,8 @@ class SwitchProDevice(Device):
     
     @led.setter
     def led(self, value:int) -> None:
+        if value is None:
+            value = 0
         self._led = min(max(value, 0), 4)
         msg = bytearray(b'\x01\x0a\x00\x00\x00\x00\x00\x00\x00\x00\x30\x00')
         for i in range(4):
@@ -631,6 +635,8 @@ class XInputDevice(Device):
     
     @led.setter
     def led(self, value:int) -> None:
+        if value is None:
+            value = 0
         self._led = min(max(value, 0), 2)
         msg = bytearray(b'\x01\x03\x02')
         for i in range(2):
