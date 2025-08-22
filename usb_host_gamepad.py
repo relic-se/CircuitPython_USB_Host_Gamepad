@@ -203,7 +203,7 @@ class Buttons:
         finally:
             return True
 
-class GamepadState:
+class State:
 
     def __init__(self):
         self._buttons = Buttons()
@@ -526,7 +526,7 @@ class Device:
             value = 0
         self._led = value
 
-    def read_state(self, state:GamepadState) -> bool:
+    def read_state(self, state:State) -> bool:
         if (current_time := time.monotonic()) - self._timestamp < self._interval / 1000:
             return False
         self._timestamp = current_time
@@ -607,7 +607,7 @@ class SwitchProDevice(Device):
                 msg[len(msg)-1] |= 1 << i
         self.write(msg)
 
-    def _update_state(self, state:GamepadState) -> None:
+    def _update_state(self, state:State) -> None:
         state.buttons.Y.pressed      = bool(self._report[2] & 0x01)
         state.buttons.X.pressed      = bool(self._report[2] & 0x02)
         state.buttons.B.pressed      = bool(self._report[2] & 0x04)
@@ -641,7 +641,7 @@ class XInputDevice(Device):
                 msg[len(msg)-1] |= 1 << (1 - i)
         self.write(msg)
 
-    def _update_state(self, state:GamepadState) -> None:
+    def _update_state(self, state:State) -> None:
         state.buttons.UP.pressed     = bool(self._report[2] & 0x01)
         state.buttons.DOWN.pressed   = bool(self._report[2] & 0x02)
         state.buttons.LEFT.pressed   = bool(self._report[2] & 0x04)
@@ -739,7 +739,7 @@ class Gamepad:
 
         self._device = None
         self._device_id = None
-        self._state = GamepadState()
+        self._state = State()
         self._timeouts = 0
 
         self._timestamp = time.monotonic() - SEARCH_DELAY
