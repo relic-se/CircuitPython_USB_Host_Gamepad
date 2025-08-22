@@ -9,7 +9,6 @@
 
 CircuitPython USB host driver for game controller devices.
 
-
 * Author(s): Cooper Dalrymple
 
 Implementation Notes
@@ -17,19 +16,16 @@ Implementation Notes
 
 **Hardware:**
 
-.. todo:: Add links to any specific hardware product page(s), or category page(s).
-  Use unordered list & hyperlink rST inline format: "* `Link Text <url>`_"
+* `Adafruit Fruit Jam <https://www.adafruit.com/product/6200>`_
+* `Adafruit Feather RP2040 with USB Type A Host <https://www.adafruit.com/product/5723>`_
+* `Adafruit SNES Controller <https://www.adafruit.com/product/6285>`_
 
 **Software and Dependencies:**
 
 * Adafruit CircuitPython firmware for the supported boards:
   https://circuitpython.org/downloads
-
-.. todo:: Uncomment or remove the Bus Device and/or the Register library dependencies
-  based on the library's use of either.
-
-# * Adafruit's Bus Device library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
-# * Adafruit's Register library: https://github.com/adafruit/Adafruit_CircuitPython_Register
+* Adafruit's USB Host Descriptors library:
+  https://github.com/adafruit/Adafruit_CircuitPython_USB_Host_Descriptors
 """
 
 # imports

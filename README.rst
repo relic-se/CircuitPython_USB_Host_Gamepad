@@ -24,6 +24,13 @@ Introduction
 
 CircuitPython USB host driver for game controller devices.
 
+Supports the following device types:
+- Generix XInput Controllers
+- Switch Pro Controller (Wired)
+- Adafruit SNES Controller
+- 8BitDo Zero 2 (Wired)
+- PowerA Wired Controller
+
 
 Dependencies
 =============
@@ -41,8 +48,6 @@ Installing from PyPI
 =====================
 .. note:: This library is not available on PyPI yet. Install documentation is included
    as a standard element. Stay tuned for PyPI availability!
-
-.. todo:: Remove the above note if PyPI version is/will be available at time of release.
 
 On supported GNU/Linux systems like the Raspberry Pi, you can install the driver locally `from
 PyPI <https://pypi.org/project/circuitpython-usb-host-gamepad/>`_.
