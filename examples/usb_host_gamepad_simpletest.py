@@ -8,18 +8,18 @@
 import time
 
 import board
-import supervisor
+import displayio
 from neopixel import NeoPixel
 
 import usb_host_gamepad
 
 DEBUG = False
 
+# disable REPL display output for better performance
+displayio.release_displays()
+
 neopixels = NeoPixel(board.NEOPIXEL, 5)
 neopixels.fill(0x000000)
-
-# disable REPL display output for better performance
-supervisor.runtime.display.root_group = None
 
 # create gamepad objects for ports 1 and 2
 gamepads = [usb_host_gamepad.Gamepad(i + 1, debug=DEBUG) for i in range(2)]
