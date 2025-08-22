@@ -456,7 +456,7 @@ def get_device_type(device:usb.core.Device, device_descriptor:DeviceDescriptor=N
     
     return DEVICE_TYPE_UNKNOWN
 
-def report_equals(a:bytearray, b:bytearray, length:int=None) -> bool:
+def _report_equals(a:bytearray, b:bytearray, length:int=None) -> bool:
     if a is None and b is not None or b is None and a is not None:
         return False
     
@@ -532,7 +532,7 @@ class Device:
         self._timestamp = current_time
 
         packet_size = self.read()
-        if not packet_size or report_equals(self._report, self._previous_report, packet_size):
+        if not packet_size or _report_equals(self._report, self._previous_report, packet_size):
             return False
         self._previous_report = self._report[:]
 
@@ -668,17 +668,17 @@ class XInputDevice(Device):
             struct.unpack('h', self._report[12:14])[0], # y
         )
 
-connected_devices = []
-failed_devices = []
-def find_device(port:int=None, debug:bool=False) -> Device:
-    global connected_devices, failed_devices
+_connected_devices = []
+_failed_devices = []
+def _find_device(port:int=None, debug:bool=False) -> Device:
+    global _connected_devices, _failed_devices
 
     if port is not None and (port < 1 or port > 2):
         raise ValueError("Only ports 1-2 supported")
 
     for device in usb.core.find(find_all=True):
         device_id = (device.idVendor, device.idProduct)
-        if (port,) + device_id in connected_devices or device_id in failed_devices:
+        if (port,) + device_id in _connected_devices or device_id in _failed_devices:
             continue
 
         if port is not None:
@@ -704,7 +704,7 @@ def find_device(port:int=None, debug:bool=False) -> Device:
         if (device_type := get_device_type(device, device_descriptor=device_descriptor, debug=debug)) == DEVICE_TYPE_UNKNOWN:
             if debug:
                 print("device not recognized")
-            failed_devices.append(device_id)
+            _failed_devices.append(device_id)
             continue
         elif debug:
             print("device identified:", next((name for x, name in DEVICE_NAMES if x == device_type)))
@@ -721,12 +721,12 @@ def find_device(port:int=None, debug:bool=False) -> Device:
             # set player led (if supported)
             device.led = port
 
-            connected_devices.append((port,) + device_id)
+            _connected_devices.append((port,) + device_id)
             return device
         except ValueError:
             if debug:
                 print("failed to initialize device")
-            failed_devices.append(device_id)
+            _failed_devices.append(device_id)
 
 class Gamepad:
     
@@ -746,7 +746,7 @@ class Gamepad:
 
     def update(self) -> bool:
         if self._device is None and time.monotonic() - self._timestamp >= SEARCH_DELAY:
-            self._device = find_device(self._port, debug=self._debug)
+            self._device = _find_device(self._port, debug=self._debug)
             if self._device is not None:
                 self._device_id = self._device.device_id
             self._timestamp = time.monotonic()
@@ -808,13 +808,13 @@ class Gamepad:
         return self._state.right_joystick
     
     def disconnect(self) -> bool:
-        global connected_devices
+        global _connected_devices
         if self._device is None:
             return False
         if self._debug:
             print("disconnecting from device:", self._device_id)
-        if (self._port,) + self._device_id in connected_devices:
-            connected_devices.remove((self._port,) + self._device_id)
+        if (self._port,) + self._device_id in _connected_devices:
+            _connected_devices.remove((self._port,) + self._device_id)
         del self._device
         self._device = None
         self._device_id = None
