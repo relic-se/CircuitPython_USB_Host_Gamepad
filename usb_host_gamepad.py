@@ -574,6 +574,7 @@ class Device:
                 pass
 
 class SwitchProDevice(Device):
+
     def __init__(self, device:usb.core.Device, device_descriptor:DeviceDescriptor=None, debug:bool=False):
         super().__init__(device, DEVICE_TYPE_SWITCH_PRO, device_descriptor=device_descriptor, debug=debug)
 
@@ -622,6 +623,7 @@ class SwitchProDevice(Device):
         state.buttons.L1.pressed     = bool(self._report[4] & 0x40)
 
 class XInputDevice(Device):
+
     def __init__(self, device:usb.core.Device, device_descriptor:DeviceDescriptor=None, debug:bool=False):
         super().__init__(device, DEVICE_TYPE_XINPUT, device_descriptor=device_descriptor, debug=debug)
         self.flush()  # ignore initial reports before normal operation
@@ -667,6 +669,70 @@ class XInputDevice(Device):
             struct.unpack('h', self._report[10:12])[0], # x
             struct.unpack('h', self._report[12:14])[0], # y
         )
+
+class AdafruitSnesDevice(Device):
+
+    def __init__(self, device:usb.core.Device, device_descriptor:DeviceDescriptor=None, debug:bool=False):
+        super().__init__(device, DEVICE_TYPE_ADAFRUIT_SNES, device_descriptor=device_descriptor, debug=debug)
+
+    def _update_state(self, state:State) -> None:
+        state.buttons.LEFT.pressed   = self._report[0] == 0x00
+        state.buttons.RIGHT.pressed  = self._report[0] == 0xff
+        state.buttons.UP.pressed     = self._report[1] == 0x00
+        state.buttons.DOWN.pressed   = self._report[1] == 0xff
+        
+        state.buttons.X.pressed      = bool(self._report[5] & 0x10)
+        state.buttons.A.pressed      = bool(self._report[5] & 0x20)
+        state.buttons.B.pressed      = bool(self._report[5] & 0x40)
+        state.buttons.Y.pressed      = bool(self._report[5] & 0x80)
+        state.buttons.L1.pressed     = bool(self._report[6] & 0x01)
+        state.buttons.R1.pressed     = bool(self._report[6] & 0x02)
+        state.buttons.SELECT.pressed = bool(self._report[6] & 0x10)
+        state.buttons.START.pressed  = bool(self._report[6] & 0x20)
+
+class Zero2Device(Device):  # 8BitDo
+
+    def __init__(self, device:usb.core.Device, device_descriptor:DeviceDescriptor=None, debug:bool=False):
+        super().__init__(device, DEVICE_TYPE_ADAFRUIT_SNES, device_descriptor=device_descriptor, debug=debug)
+
+    def _update_state(self, state:State) -> None:
+        state.buttons.A.pressed      = bool(self._report[0] & 0x01)
+        state.buttons.B.pressed      = bool(self._report[0] & 0x02)
+        state.buttons.X.pressed      = bool(self._report[0] & 0x08)
+        state.buttons.Y.pressed      = bool(self._report[0] & 0x10)
+        state.buttons.L1.pressed     = bool(self._report[0] & 0x40)
+        state.buttons.R1.pressed     = bool(self._report[0] & 0x80)
+        state.buttons.SELECT.pressed = bool(self._report[1] & 0x04)
+        state.buttons.START.pressed  = bool(self._report[1] & 0x08)
+
+        # 4-bit BCD
+        state.buttons.UP    = self._report[2] in [0x07, 0x00, 0x01]
+        state.buttons.RIGHT = self._report[2] in [0x01, 0x02, 0x03]
+        state.buttons.DOWN  = self._report[2] in [0x03, 0x04, 0x05]
+        state.buttons.LEFT  = self._report[2] in [0x05, 0x06, 0x07]
+
+class PowerAWiredDevice(Device):
+
+    def __init__(self, device:usb.core.Device, device_descriptor:DeviceDescriptor=None, debug:bool=False):
+        super().__init__(device, DEVICE_TYPE_POWERA_WIRED, device_descriptor=device_descriptor, debug=debug)
+    
+    def _update_state(self, state:State) -> None:
+        # Buttons are bitfield
+        state.buttons.Y      = bool(self._report[0] & 0x01)
+        state.buttons.B      = bool(self._report[0] & 0x02)
+        state.buttons.A      = bool(self._report[0] & 0x04)
+        state.buttons.X      = bool(self._report[0] & 0x08)
+        state.buttons.L1     = bool(self._report[0] & 0x10)
+        state.buttons.R1     = bool(self._report[0] & 0x20)
+        state.buttons.SELECT = bool(self._report[1] & 0x01)
+        state.buttons.START  = bool(self._report[1] & 0x02)
+
+        # 4-bit BCD
+        state.buttons.UP    = self._report[2] in [0x07, 0x00, 0x01]
+        state.buttons.RIGHT = self._report[2] in [0x01, 0x02, 0x03]
+        state.buttons.DOWN  = self._report[2] in [0x03, 0x04, 0x05]
+        state.buttons.LEFT  = self._report[2] in [0x05, 0x06, 0x07]
+
 
 _connected_devices = []
 _failed_devices = []
@@ -715,8 +781,14 @@ def _find_device(port:int=None, debug:bool=False) -> Device:
                 device = SwitchProDevice(device, device_descriptor=device_descriptor, debug=debug)
             elif device_type == DEVICE_TYPE_XINPUT:
                 device = XInputDevice(device, device_descriptor=device_descriptor, debug=debug)
+            elif device_type == DEVICE_TYPE_ADAFRUIT_SNES:
+                device = AdafruitSnesDevice(device, device_descriptor=device_descriptor, debug=debug)
+            elif device_type == DEVICE_TYPE_8BITDO_ZERO2:
+                device = Zero2Device(device, device_descriptor=device_descriptor, debug=debug)
+            elif device_type == DEVICE_TYPE_POWERA_WIRED:
+                device = PowerAWiredDevice(device, device_descriptor=device_descriptor, debug=debug)
             else:
-                device = Device(device, device_type, device_descriptor=device_descriptor, debug=debug)
+                raise ValueError("Unknown device type")
 
             # set player led (if supported)
             device.led = port
