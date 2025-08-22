@@ -46,10 +46,10 @@ from usb.util import SPEED_HIGH
 
 import adafruit_usb_host_descriptors
 
-MAX_TIMEOUTS       = const(99)
-SEARCH_DELAY       = const(1)
-TRIGGER_THRESHOLD  = const(128)
-JOYSTICK_THRESHOLD = const(8192)
+_MAX_TIMEOUTS       = const(99)
+_SEARCH_DELAY       = const(1)
+_TRIGGER_THRESHOLD  = const(128)
+_JOYSTICK_THRESHOLD = const(8192)
 
 # USB detected device types
 
@@ -222,7 +222,7 @@ class State:
         if type(value) is float:
             value = int(value * 255)
         self._left_trigger = min(max(value, 0), 255)
-        self._buttons.L2.pressed = self._left_trigger >= TRIGGER_THRESHOLD
+        self._buttons.L2.pressed = self._left_trigger >= _TRIGGER_THRESHOLD
     
     @property
     def right_trigger(self) -> float:
@@ -233,7 +233,7 @@ class State:
         if type(value) is float:
             value = int(value * 255)
         self._right_trigger = min(max(value, 0), 255)
-        self._buttons.R2.pressed = self._right_trigger >= TRIGGER_THRESHOLD
+        self._buttons.R2.pressed = self._right_trigger >= _TRIGGER_THRESHOLD
     
     @property
     def left_joystick(self) -> tuple:
@@ -252,10 +252,10 @@ class State:
         self._left_joystick_x = min(max(x, -32768), 32767)
         self._left_joystick_y = min(max(y, -32768), 32767)
 
-        self._buttons.JOYSTICK_RIGHT.pressed = self._left_joystick_x >= JOYSTICK_THRESHOLD
-        self._buttons.JOYSTICK_LEFT.pressed  = self._left_joystick_x <= -JOYSTICK_THRESHOLD
-        self._buttons.JOYSTICK_UP.pressed    = self._left_joystick_y >= JOYSTICK_THRESHOLD
-        self._buttons.JOYSTICK_DOWN.pressed  = self._left_joystick_y <= -JOYSTICK_THRESHOLD
+        self._buttons.JOYSTICK_RIGHT.pressed = self._left_joystick_x >= _JOYSTICK_THRESHOLD
+        self._buttons.JOYSTICK_LEFT.pressed  = self._left_joystick_x <= -_JOYSTICK_THRESHOLD
+        self._buttons.JOYSTICK_UP.pressed    = self._left_joystick_y >= _JOYSTICK_THRESHOLD
+        self._buttons.JOYSTICK_DOWN.pressed  = self._left_joystick_y <= -_JOYSTICK_THRESHOLD
     
     @property
     def right_joystick(self) -> tuple:
@@ -742,10 +742,10 @@ class Gamepad:
         self._state = State()
         self._timeouts = 0
 
-        self._timestamp = time.monotonic() - SEARCH_DELAY
+        self._timestamp = time.monotonic() - _SEARCH_DELAY
 
     def update(self) -> bool:
-        if self._device is None and time.monotonic() - self._timestamp >= SEARCH_DELAY:
+        if self._device is None and time.monotonic() - self._timestamp >= _SEARCH_DELAY:
             self._device = _find_device(self._port, debug=self._debug)
             if self._device is not None:
                 self._device_id = self._device.device_id
@@ -757,7 +757,7 @@ class Gamepad:
             return self._device.read_state(self._state)
         except usb.core.USBTimeoutError:
             self._timeouts += 1
-            if self._timeouts > MAX_TIMEOUTS:
+            if self._timeouts > _MAX_TIMEOUTS:
                 if self._debug:
                     print("device exceeded max timeouts")
                 return self.disconnect()
