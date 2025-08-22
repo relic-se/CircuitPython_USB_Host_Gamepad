@@ -24,12 +24,13 @@ Introduction
 
 CircuitPython USB host driver for game controller devices.
 
-Supports the following device types:
-- Generix XInput Controllers
-- Switch Pro Controller (Wired)
-- Adafruit SNES Controller
-- 8BitDo Zero 2 (Wired)
-- PowerA Wired Controller
+Supports the following devices:
+
+* Generix XInput Controllers
+* Switch Pro Controller (Wired)
+* `Adafruit SNES Controller <https://www.adafruit.com/product/6285>`_
+* 8BitDo Zero 2 (Wired)
+* PowerA Wired Controller
 
 
 Dependencies
