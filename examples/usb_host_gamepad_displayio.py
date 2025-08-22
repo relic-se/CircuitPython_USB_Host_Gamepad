@@ -12,6 +12,8 @@ import usb_host_gamepad
 import vectorio
 from adafruit_fruitjam.peripherals import request_display_config
 
+displayio.release_displays()
+
 request_display_config(320, 240)
 display = supervisor.runtime.display
 display.auto_refresh = False
@@ -131,6 +133,9 @@ for i, gamepad in enumerate(gamepads):
     gamepad.x = gap * (i + 1) + gamepad.width * i
     gamepad.y = (display.height - gamepad.height) // 2
     main_group.append(gamepad)
+
+# initial refresh
+display.refresh()
 
 while True:
     updated = False
