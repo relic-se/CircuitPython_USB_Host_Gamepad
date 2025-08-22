@@ -58,8 +58,7 @@ DEVICE_TYPE_SWITCH_PRO    = const(1)  # 057e:2009 clones of Switch Pro Controlle
 DEVICE_TYPE_ADAFRUIT_SNES = const(2)  # 081f:e401 generic SNES layout HID, low-speed
 DEVICE_TYPE_8BITDO_ZERO2  = const(3)  # 2dc8:9018 mini SNES layout, HID over USB-C
 DEVICE_TYPE_XINPUT        = const(4)  # (vid:pid vary) Clones of Xbox360 controller
-DEVICE_TYPE_BOOT_KEYBOARD = const(5)
-DEVICE_TYPE_POWERA_WIRED  = const(6)  # 20d6:a711 PowerA Wired Controller (for Switch)
+DEVICE_TYPE_POWERA_WIRED  = const(5)  # 20d6:a711 PowerA Wired Controller (for Switch)
 
 DEVICE_TYPES = (
     # (index, vid, pid),
@@ -72,7 +71,6 @@ DEVICE_TYPES = (
 DEVICE_CLASSES = (
     # (index, device class, device subclass, interface 0 class, interface 0 subclass),
     (DEVICE_TYPE_XINPUT, 0xff, 0xff, 0xff, 0x5d),
-    (DEVICE_TYPE_BOOT_KEYBOARD, 0x00, 0x00, 0x03, 0x01),
 )
 
 DEVICE_NAMES = (
@@ -81,7 +79,6 @@ DEVICE_NAMES = (
     (DEVICE_TYPE_ADAFRUIT_SNES, "Adafruit SNES Controller"),
     (DEVICE_TYPE_8BITDO_ZERO2, "8BitDo Zero 2"),
     (DEVICE_TYPE_XINPUT, "Generic XInput"),
-    (DEVICE_TYPE_BOOT_KEYBOARD, "Generic Boot Keyboard"),
     (DEVICE_TYPE_POWERA_WIRED, "PowerA Wired Controller"),
 )
 
