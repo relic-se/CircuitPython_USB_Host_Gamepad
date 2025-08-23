@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: MIT
 """
-`usb_host_gamepad`
+`relic_usb_host_gamepad`
 ================================================================================
 
 CircuitPython USB host driver for game controller devices.
