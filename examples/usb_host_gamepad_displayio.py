@@ -12,7 +12,7 @@ import supervisor
 import vectorio
 from adafruit_fruitjam.peripherals import request_display_config
 
-import usb_host_gamepad
+import relic_usb_host_gamepad
 
 displayio.release_displays()
 
@@ -27,7 +27,7 @@ display.root_group = main_group
 class Gamepad(displayio.Group):
     def __init__(self, port: int, size: int = 100):
         super().__init__()
-        self._gamepad = usb_host_gamepad.Gamepad(port)
+        self._gamepad = relic_usb_host_gamepad.Gamepad(port)
 
         bg_palette = displayio.Palette(1)
         bg_palette[0] = 0x0000FF
@@ -43,27 +43,27 @@ class Gamepad(displayio.Group):
         button_size = int(size * 0.05)
 
         self._buttons = (
-            (usb_host_gamepad.Button.A, 0.85, 0.4),
-            (usb_host_gamepad.Button.B, 0.8, 0.5),
-            (usb_host_gamepad.Button.X, 0.8, 0.3),
-            (usb_host_gamepad.Button.Y, 0.75, 0.4),
-            (usb_host_gamepad.Button.LEFT, 0.15, 0.4),
-            (usb_host_gamepad.Button.RIGHT, 0.25, 0.4),
-            (usb_host_gamepad.Button.UP, 0.2, 0.3),
-            (usb_host_gamepad.Button.DOWN, 0.2, 0.5),
-            (usb_host_gamepad.Button.START, 0.6, 0.4),
-            (usb_host_gamepad.Button.SELECT, 0.4, 0.4),
-            (usb_host_gamepad.Button.HOME, 0.5, 0.4),
-            (usb_host_gamepad.Button.L1, 0.1, 0.1),
-            (usb_host_gamepad.Button.L2, 0.2, 0.1),
-            (usb_host_gamepad.Button.L3, 0.3, 0.1),
-            (usb_host_gamepad.Button.R1, 0.9, 0.1),
-            (usb_host_gamepad.Button.R2, 0.8, 0.1),
-            (usb_host_gamepad.Button.R3, 0.7, 0.1),
-            (usb_host_gamepad.Button.JOYSTICK_LEFT, 0.25, 0.75),
-            (usb_host_gamepad.Button.JOYSTICK_RIGHT, 0.45, 0.75),
-            (usb_host_gamepad.Button.JOYSTICK_UP, 0.35, 0.6),
-            (usb_host_gamepad.Button.JOYSTICK_DOWN, 0.35, 0.9),
+            (relic_usb_host_gamepad.Button.A, 0.85, 0.4),
+            (relic_usb_host_gamepad.Button.B, 0.8, 0.5),
+            (relic_usb_host_gamepad.Button.X, 0.8, 0.3),
+            (relic_usb_host_gamepad.Button.Y, 0.75, 0.4),
+            (relic_usb_host_gamepad.Button.LEFT, 0.15, 0.4),
+            (relic_usb_host_gamepad.Button.RIGHT, 0.25, 0.4),
+            (relic_usb_host_gamepad.Button.UP, 0.2, 0.3),
+            (relic_usb_host_gamepad.Button.DOWN, 0.2, 0.5),
+            (relic_usb_host_gamepad.Button.START, 0.6, 0.4),
+            (relic_usb_host_gamepad.Button.SELECT, 0.4, 0.4),
+            (relic_usb_host_gamepad.Button.HOME, 0.5, 0.4),
+            (relic_usb_host_gamepad.Button.L1, 0.1, 0.1),
+            (relic_usb_host_gamepad.Button.L2, 0.2, 0.1),
+            (relic_usb_host_gamepad.Button.L3, 0.3, 0.1),
+            (relic_usb_host_gamepad.Button.R1, 0.9, 0.1),
+            (relic_usb_host_gamepad.Button.R2, 0.8, 0.1),
+            (relic_usb_host_gamepad.Button.R3, 0.7, 0.1),
+            (relic_usb_host_gamepad.Button.JOYSTICK_LEFT, 0.25, 0.75),
+            (relic_usb_host_gamepad.Button.JOYSTICK_RIGHT, 0.45, 0.75),
+            (relic_usb_host_gamepad.Button.JOYSTICK_UP, 0.35, 0.6),
+            (relic_usb_host_gamepad.Button.JOYSTICK_DOWN, 0.35, 0.9),
         )
         self._circles = []
         for button, x, y in self._buttons:

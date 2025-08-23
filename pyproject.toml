@@ -24,14 +24,17 @@ keywords = [
     "blinka",
     "circuitpython",
     "micropython",
+    "relic_usb_host_gamepad",
     "usb_host_gamepad",
     "circuitpython",
+    "relic-usb-host-gamepad",
     "usb-host-gamepad",
     "usb-host",
     "usb",
     "gamepad",
     "controller",
     "game",
+    "relic",
 ]
 license = {text = "MIT"}
 classifiers = [
@@ -45,7 +48,7 @@ classifiers = [
 dynamic = ["dependencies", "optional-dependencies"]
 
 [tool.setuptools]
-py-modules = ["usb_host_gamepad"]
+py-modules = ["relic_usb_host_gamepad"]
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}

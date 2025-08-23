@@ -4,10 +4,10 @@
 # SPDX-License-Identifier: Unlicense
 import usb.core
 
-import usb_host_gamepad
+import relic_usb_host_gamepad
 
 for i, device in enumerate(usb.core.find(find_all=True)):
-    descriptor = usb_host_gamepad.DeviceDescriptor(device)
+    descriptor = relic_usb_host_gamepad.DeviceDescriptor(device)
     print(f"Device {i}:", descriptor)
     for j, configuration in enumerate(descriptor.configuration):
         print(f"Configuration {j}:", configuration)

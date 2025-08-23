@@ -88,7 +88,7 @@ following command to install:
 
 .. code-block:: shell
 
-    circup install usb_host_gamepad
+    circup install relic_usb_host_gamepad
 
 Or the following command to update an existing version:
 
@@ -101,8 +101,8 @@ Usage Example
 
 .. code-block:: python
 
-    import usb_host_gamepad
-    gamepad = usb_host_gamepad.Gamepad()
+    import relic_usb_host_gamepad
+    gamepad = relic_usb_host_gamepad.Gamepad()
     while True:
         for event in gamepad.events:
             print(event)

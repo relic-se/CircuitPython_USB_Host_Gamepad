@@ -7,5 +7,5 @@
 API Reference
 #############
 
-.. automodule:: usb_host_gamepad
+.. automodule:: relic_usb_host_gamepad
     :members:

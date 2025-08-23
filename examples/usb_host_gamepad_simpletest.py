@@ -11,7 +11,7 @@ import board
 import displayio
 from neopixel import NeoPixel
 
-import usb_host_gamepad
+import relic_usb_host_gamepad
 
 DEBUG = False
 
@@ -22,7 +22,7 @@ neopixels = NeoPixel(board.NEOPIXEL, 5)
 neopixels.fill(0x000000)
 
 # create gamepad objects for ports 1 and 2
-gamepads = [usb_host_gamepad.Gamepad(i + 1, debug=DEBUG) for i in range(2)]
+gamepads = [relic_usb_host_gamepad.Gamepad(i + 1, debug=DEBUG) for i in range(2)]
 
 while True:
     changed = False
