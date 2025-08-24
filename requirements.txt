@@ -4,4 +4,4 @@
 # SPDX-License-Identifier: MIT
 
 Adafruit-Blinka
-adafruit-circuitpython-usb-host-descriptors
+circuitpython-usb-host-descriptor-parser

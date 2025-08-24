@@ -36,10 +36,10 @@ __repo__ = "https://github.com/relic-se/CircuitPython_USB_Host_Gamepad.git"
 import struct
 import time
 
-import adafruit_usb_host_descriptors
 import keypad
 import usb.core
 from micropython import const
+from relic_usb_host_descriptor_parser import DeviceDescriptor
 from usb.util import SPEED_HIGH
 
 _MAX_TIMEOUTS = const(99)
@@ -298,166 +298,6 @@ class State:
         self._right_joystick_y = 0
 
 
-class Descriptor:
-    def __init__(self, descriptor: bytearray, length: int = None, descriptor_type: int = None):
-        if (
-            (length is not None and len(descriptor) != length)
-            or descriptor[0] != len(descriptor)
-            or (descriptor_type is not None and descriptor[1] != descriptor_type)
-        ):
-            raise ValueError("Invalid descriptor format")
-
-
-class EndpointDescriptor(Descriptor):
-    def __init__(self, descriptor: bytearray):
-        super().__init__(descriptor, 7, adafruit_usb_host_descriptors.DESC_ENDPOINT)
-        self.address = descriptor[2]
-        self.attributes = descriptor[3]
-        self.max_packet_size = (descriptor[5] << 8) | descriptor[4]
-        self.interval = descriptor[6]
-
-    @property
-    def input(self) -> bool:
-        return bool(self.address & 0x80)
-
-    @property
-    def output(self) -> bool:
-        return not self.input
-
-    def __str__(self):
-        return str(
-            {
-                "address": hex(self.address),
-                "attributes": hex(self.attributes),
-                "max_packet_size": self.max_packet_size,
-                "interval": self.interval,
-                "input": self.input,
-                "output": self.output,
-            }
-        )
-
-
-class InterfaceDescriptor(Descriptor):
-    def __init__(self, descriptor: bytearray):
-        super().__init__(descriptor, 9, adafruit_usb_host_descriptors.DESC_INTERFACE)
-        self.index = descriptor[2]
-        self.endpoints = descriptor[4]
-        self.interface_class = descriptor[5]
-        self.interface_subclass = descriptor[6]
-        self.protocol = descriptor[7]
-
-        self.endpoint = []
-
-    def append_endpoint(self, descriptor: bytearray) -> None:
-        self.endpoint.append(EndpointDescriptor(descriptor))
-
-    @property
-    def in_endpoint(self) -> EndpointDescriptor:
-        try:
-            return next(x for x in self.endpoint if x.input)
-        except StopIteration:
-            return None
-
-    @property
-    def out_endpoint(self) -> EndpointDescriptor:
-        try:
-            return next(x for x in self.endpoint if x.output)
-        except StopIteration:
-            return None
-
-    def get_class_identifier(self) -> tuple:
-        return (self.interface_class, self.interface_subclass)
-
-    def __str__(self):
-        return str(
-            {
-                "class": hex(self.interface_class),
-                "subclass": hex(self.interface_subclass),
-                "protocol": hex(self.protocol),
-                "endpoints": self.endpoints,
-            }
-        )
-
-
-class ConfigurationDescriptor(Descriptor):
-    def __init__(self, device: usb.core.Device, configuration: int = 0):
-        config_descriptor = adafruit_usb_host_descriptors.get_configuration_descriptor(
-            device, configuration
-        )
-
-        self.interface = []
-
-        interface_index = None
-        i = 0
-        while i < len(config_descriptor):
-            descriptor_len, descriptor_type = config_descriptor[i : i + 2]
-            descriptor = config_descriptor[i : i + descriptor_len]
-
-            if descriptor_type == adafruit_usb_host_descriptors.DESC_CONFIGURATION:
-                super().__init__(descriptor, 9, adafruit_usb_host_descriptors.DESC_CONFIGURATION)
-                self.interfaces = descriptor[4]
-                self.value = descriptor[5]  # for set_configuration()
-                self._max_power = descriptor[8]
-
-            elif descriptor_type == adafruit_usb_host_descriptors.DESC_INTERFACE:
-                interface_index = len(self.interface)
-                self.interface.append(InterfaceDescriptor(descriptor))
-
-            elif (
-                descriptor_type == adafruit_usb_host_descriptors.DESC_ENDPOINT
-                and interface_index is not None
-            ):
-                self.interface[interface_index].append_endpoint(descriptor)
-
-            i += descriptor_len
-
-    @property
-    def max_power(self) -> int:
-        return self._max_power * 2  # units are 2 mA
-
-    def get_class_identifier(self, interface: int = 0):
-        return self.interface[interface].get_class_identifier()
-
-    def __str__(self):
-        return str(
-            {
-                "value": hex(self.value),
-                "max_power": f"{self.max_power} mA",
-                "interfaces": self.interfaces,
-            }
-        )
-
-
-class DeviceDescriptor:
-    def __init__(self, device: usb.core.Device):
-        descriptor = adafruit_usb_host_descriptors.get_device_descriptor(device)
-        self.device_class = descriptor[4]
-        self.device_subclass = descriptor[5]
-        self.protocol = descriptor[6]
-        self.max_packet_size = descriptor[7]
-        self.configurations = descriptor[17]
-
-        self.configuration = []
-        for i in range(self.configurations):
-            self.configuration.append(ConfigurationDescriptor(device, i))
-
-    def get_class_identifier(self, configuration: int = 0, interface: int = 0) -> tuple:
-        return (self.device_class, self.device_subclass) + self.configuration[
-            configuration
-        ].get_class_identifier(interface)
-
-    def __str__(self):
-        return str(
-            {
-                "class": hex(self.device_class),
-                "subclass": hex(self.device_subclass),
-                "protocol": hex(self.protocol),
-                "max_packet_size": self.max_packet_size,
-                "configurations": self.configurations,
-            }
-        )
-
-
 def get_device_type(
     device: usb.core.Device, device_descriptor: DeviceDescriptor = None, debug: bool = False
 ) -> int:
@@ -519,8 +359,8 @@ class Device:
         self._descriptor = (
             DeviceDescriptor(device) if device_descriptor is None else device_descriptor
         )
-        self._configuration = self._descriptor.configuration[configuration]
-        self._interface = self._configuration.interface[interface]
+        self._configuration = self._descriptor.configurations[configuration]
+        self._interface = self._configuration.interfaces[interface]
         self._in_endpoint = self._interface.in_endpoint
         self._out_endpoint = self._interface.out_endpoint
         if self._in_endpoint is None or self._out_endpoint is None:
