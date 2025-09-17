@@ -119,110 +119,110 @@ BUTTON_NAMES = (
 statements.
 """
 
-BUTTON_A = const(0)
+BUTTON_A = 0
 """The ID of the "A" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
 attributes.
 """
 
-BUTTON_B = const(1)
+BUTTON_B = 1
 """The ID of the "B" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
 attributes.
 """
 
-BUTTON_X = const(2)
+BUTTON_X = 2
 """The ID of the "X" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
 attributes.
 """
 
-BUTTON_Y = const(3)
+BUTTON_Y = 3
 """The ID of the "Y" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
 attributes.
 """
 
-BUTTON_UP = const(4)
+BUTTON_UP = 4
 """The ID of the "D-Pad Up" button. Used by the :attr:`Button.index` and
 :attr:`keypad.Event.key_number` attributes.
 """
 
-BUTTON_DOWN = const(5)
+BUTTON_DOWN = 5
 """The ID of the "D-Pad Down" button. Used by the :attr:`Button.index` and
 :attr:`keypad.Event.key_number` attributes.
 """
 
-BUTTON_LEFT = const(6)
+BUTTON_LEFT = 6
 """The ID of the "D-Pad Left" button. Used by the :attr:`Button.index` and
 :attr:`keypad.Event.key_number` attributes.
 """
 
-BUTTON_RIGHT = const(7)
+BUTTON_RIGHT = 7
 """The ID of the "D-Pad Right" button. Used by the :attr:`Button.index` and
 :attr:`keypad.Event.key_number` attributes.
 """
 
-BUTTON_START = const(8)
+BUTTON_START = 8
 """The ID of the "Start" button. Used by the :attr:`Button.index` and
 :attr:`keypad.Event.key_number` attributes.
 """
 
-BUTTON_SELECT = const(9)
+BUTTON_SELECT = 9
 """The ID of the "Select" button. Used by the :attr:`Button.index` and
 :attr:`keypad.Event.key_number` attributes.
 """
 
-BUTTON_HOME = const(10)
+BUTTON_HOME = 10
 """The ID of the "Home" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
 attributes.
 """
 
-BUTTON_L1 = const(11)
+BUTTON_L1 = 11
 """The ID of the "L1" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
 attributes.
 """
 
-BUTTON_R1 = const(12)
+BUTTON_R1 = 12
 """The ID of the "R1" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
 attributes.
 """
 
-BUTTON_L2 = const(13)
+BUTTON_L2 = 13
 """The ID of the "L2" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
 attributes.
 """
 
-BUTTON_R2 = const(14)
+BUTTON_R2 = 14
 """The ID of the "R2" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
 attributes.
 """
 
-BUTTON_L3 = const(15)
+BUTTON_L3 = 15
 """The ID of the "L3" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
 attributes.
 """
 
-BUTTON_R3 = const(16)
+BUTTON_R3 = 16
 """The ID of the "R3" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
 attributes.
 """
 
-BUTTON_JOYSTICK_UP = const(17)
+BUTTON_JOYSTICK_UP = 17
 """The ID of the "Joystick Up" button which is triggered when the left joystick exceeds the analog
 threshold in the up direction. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
 attributes.
 """
 
-BUTTON_JOYSTICK_DOWN = const(18)
+BUTTON_JOYSTICK_DOWN = 18
 """The ID of the "Joystick Down" button which is triggered when the left joystick exceeds the analog
 threshold in the down direction. Used by the :attr:`Button.index` and
 :attr:`keypad.Event.key_number` attributes.
 """
 
-BUTTON_JOYSTICK_LEFT = const(19)
+BUTTON_JOYSTICK_LEFT = 19
 """The ID of the "Joystick Left" button which is triggered when the left joystick exceeds the analog
 threshold in the left direction. Used by the :attr:`Button.index` and
 :attr:`keypad.Event.key_number` attributes.
 """
 
-BUTTON_JOYSTICK_RIGHT = const(20)
+BUTTON_JOYSTICK_RIGHT = 20
 """The ID of the "Joystick Right" button which is triggered when the left joystick exceeds the
 analog threshold in the right direction. Used by the :attr:`Button.index` and
 :attr:`keypad.Event.key_number` attributes.
@@ -231,7 +231,6 @@ analog threshold in the right direction. Used by the :attr:`Button.index` and
 
 class Button:
     def __init__(self, index: int):
-        assert 0 <= index < len(BUTTON_NAMES)
         self._mask = 1 << index
 
     def __get__(self, obj, objtype=None):
