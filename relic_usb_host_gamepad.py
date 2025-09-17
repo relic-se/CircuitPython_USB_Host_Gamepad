@@ -102,32 +102,32 @@ _BUTTON_NAMES = (
     "JOYSTICK_RIGHT",
 )
 
+_BUTTON_ID_A = const(0)
+_BUTTON_ID_B = const(1)
+_BUTTON_ID_X = const(2)
+_BUTTON_ID_Y = const(3)
+_BUTTON_ID_UP = const(4)
+_BUTTON_ID_DOWN = const(5)
+_BUTTON_ID_LEFT = const(6)
+_BUTTON_ID_RIGHT = const(7)
+_BUTTON_ID_START = const(8)
+_BUTTON_ID_SELECT = const(9)
+_BUTTON_ID_HOME = const(10)
+_BUTTON_ID_L1 = const(11)
+_BUTTON_ID_R1 = const(12)
+_BUTTON_ID_L2 = const(13)
+_BUTTON_ID_R2 = const(14)
+_BUTTON_ID_L3 = const(15)
+_BUTTON_ID_R3 = const(16)
+_BUTTON_ID_JOYSTICK_UP = const(17)
+_BUTTON_ID_JOYSTICK_DOWN = const(18)
+_BUTTON_ID_JOYSTICK_LEFT = const(19)
+_BUTTON_ID_JOYSTICK_RIGHT = const(20)
+
 
 class Button:
-    A = const(0)
-    B = const(1)
-    X = const(2)
-    Y = const(3)
-    UP = const(4)
-    DOWN = const(5)
-    LEFT = const(6)
-    RIGHT = const(7)
-    START = const(8)
-    SELECT = const(9)
-    HOME = const(10)
-    L1 = const(11)
-    R1 = const(12)
-    L2 = const(13)
-    R2 = const(14)
-    L3 = const(15)
-    R3 = const(16)
-    JOYSTICK_UP = const(17)
-    JOYSTICK_DOWN = const(18)
-    JOYSTICK_LEFT = const(19)
-    JOYSTICK_RIGHT = const(20)
-
     def __init__(self, value: int, pressed: bool = False):
-        assert self.A <= value <= self.JOYSTICK_RIGHT
+        assert self.A <= value <= _BUTTON_ID_JOYSTICK_RIGHT
         self._value = value
         self._pressed = pressed
         self._changed = False
@@ -172,27 +172,27 @@ class Button:
 
 class Buttons:
     def __init__(self):
-        self.A = Button(Button.A)
-        self.B = Button(Button.B)
-        self.X = Button(Button.X)
-        self.Y = Button(Button.Y)
-        self.UP = Button(Button.UP)
-        self.DOWN = Button(Button.DOWN)
-        self.LEFT = Button(Button.LEFT)
-        self.RIGHT = Button(Button.RIGHT)
-        self.START = Button(Button.START)
-        self.SELECT = Button(Button.SELECT)
-        self.HOME = Button(Button.HOME)
-        self.L1 = Button(Button.L1)
-        self.R1 = Button(Button.R1)
-        self.L2 = Button(Button.L2)
-        self.R2 = Button(Button.R2)
-        self.L3 = Button(Button.L3)
-        self.R3 = Button(Button.R3)
-        self.JOYSTICK_UP = Button(Button.JOYSTICK_UP)
-        self.JOYSTICK_DOWN = Button(Button.JOYSTICK_DOWN)
-        self.JOYSTICK_LEFT = Button(Button.JOYSTICK_LEFT)
-        self.JOYSTICK_RIGHT = Button(Button.JOYSTICK_RIGHT)
+        self.A = Button(_BUTTON_ID_A)
+        self.B = Button(_BUTTON_ID_B)
+        self.X = Button(_BUTTON_ID_X)
+        self.Y = Button(_BUTTON_ID_Y)
+        self.UP = Button(_BUTTON_ID_UP)
+        self.DOWN = Button(_BUTTON_ID_DOWN)
+        self.LEFT = Button(_BUTTON_ID_LEFT)
+        self.RIGHT = Button(_BUTTON_ID_RIGHT)
+        self.START = Button(_BUTTON_ID_START)
+        self.SELECT = Button(_BUTTON_ID_SELECT)
+        self.HOME = Button(_BUTTON_ID_HOME)
+        self.L1 = Button(_BUTTON_ID_L1)
+        self.R1 = Button(_BUTTON_ID_R1)
+        self.L2 = Button(_BUTTON_ID_L2)
+        self.R2 = Button(_BUTTON_ID_R2)
+        self.L3 = Button(_BUTTON_ID_L3)
+        self.R3 = Button(_BUTTON_ID_R3)
+        self.JOYSTICK_UP = Button(_BUTTON_ID_JOYSTICK_UP)
+        self.JOYSTICK_DOWN = Button(_BUTTON_ID_JOYSTICK_DOWN)
+        self.JOYSTICK_LEFT = Button(_BUTTON_ID_JOYSTICK_LEFT)
+        self.JOYSTICK_RIGHT = Button(_BUTTON_ID_JOYSTICK_RIGHT)
 
     def __iter__(self):
         for x in _BUTTON_NAMES:
@@ -317,7 +317,13 @@ def _get_device_type(
     class_identifier = device_descriptor.get_class_identifier()
     if debug:
         print("identifying device by class identifier:", [hex(x) for x in class_identifier])
-    for device_type, type_class, type_subclass, type_int_class, type_int_subclass in _DEVICE_CLASSES:
+    for (
+        device_type,
+        type_class,
+        type_subclass,
+        type_int_class,
+        type_int_subclass,
+    ) in _DEVICE_CLASSES:
         if class_identifier == (type_class, type_subclass, type_int_class, type_int_subclass):
             if debug:
                 print("found device type:", device_type)
@@ -709,7 +715,9 @@ def _find_device(port: int = None, debug: bool = False) -> Device:  # noqa: PLR0
 
         device_descriptor = DeviceDescriptor(device)
         if (
-            device_type := _get_device_type(device, device_descriptor=device_descriptor, debug=debug)
+            device_type := _get_device_type(
+                device, device_descriptor=device_descriptor, debug=debug
+            )
         ) == _DEVICE_TYPE_UNKNOWN:
             if debug:
                 print("device not recognized")
