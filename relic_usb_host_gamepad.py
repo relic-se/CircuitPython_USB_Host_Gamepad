@@ -67,7 +67,8 @@ DEVICE_TYPE_8BITDO_ZERO2 = const(3)  # 2dc8:9018 mini SNES layout, HID over USB-
 """The type of a usb gamepad device which has been identified as an 8BitDo Zero 2 controller."""
 
 DEVICE_TYPE_XINPUT = const(4)  # (vid:pid vary) Clones of Xbox360 controller
-"""The type of a usb gamepad device which has been identified as an X-Input compatible controller."""
+"""The type of a usb gamepad device which has been identified as an X-Input compatible controller.
+"""
 
 DEVICE_TYPE_POWERA_WIRED = const(5)  # 20d6:a711 PowerA Wired Controller (for Switch)
 """The type of a usb gamepad device which has been identified as an Adafruit SNES controller."""
@@ -319,7 +320,6 @@ class Buttons:
 
 
 class State:
-
     def __init__(self):
         self._buttons = Buttons()
         self.reset()
@@ -822,7 +822,8 @@ def _find_device(port: int = None, debug: bool = False) -> Device:  # noqa: PLR0
             continue
         elif debug:
             print(
-                "device identified:", next((name for i, name in enumerate(DEVICE_NAMES) if i == device_type))
+                "device identified:",
+                next((name for i, name in enumerate(DEVICE_NAMES) if i == device_type)),
             )
 
         try:
