@@ -42,6 +42,11 @@ from micropython import const
 from relic_usb_host_descriptor_parser import DeviceDescriptor
 from usb.util import SPEED_HIGH
 
+try:
+    from typing import Optional, Type
+except ImportError:
+    pass
+
 _MAX_TIMEOUTS = const(99)
 _SEARCH_DELAY = const(1)
 _TRIGGER_THRESHOLD = const(128)
@@ -78,7 +83,7 @@ _DEVICE_NAMES = (
     (_DEVICE_TYPE_POWERA_WIRED, "PowerA Wired Controller"),
 )
 
-_BUTTON_NAMES = (
+BUTTON_NAMES = (
     "A",
     "B",
     "X",
@@ -103,121 +108,191 @@ _BUTTON_NAMES = (
 )
 
 BUTTON_A = const(0)
+"""The ID of the "A" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
+attributes.
+"""
+
 BUTTON_B = const(1)
+"""The ID of the "B" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
+attributes.
+"""
+
 BUTTON_X = const(2)
+"""The ID of the "X" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
+attributes.
+"""
+
 BUTTON_Y = const(3)
+"""The ID of the "Y" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
+attributes.
+"""
+
 BUTTON_UP = const(4)
+"""The ID of the "D-Pad Up" button. Used by the :attr:`Button.index` and
+:attr:`keypad.Event.key_number` attributes.
+"""
+
 BUTTON_DOWN = const(5)
+"""The ID of the "D-Pad Down" button. Used by the :attr:`Button.index` and
+:attr:`keypad.Event.key_number` attributes.
+"""
+
 BUTTON_LEFT = const(6)
+"""The ID of the "D-Pad Left" button. Used by the :attr:`Button.index` and
+:attr:`keypad.Event.key_number` attributes.
+"""
+
 BUTTON_RIGHT = const(7)
+"""The ID of the "D-Pad Right" button. Used by the :attr:`Button.index` and
+:attr:`keypad.Event.key_number` attributes.
+"""
+
 BUTTON_START = const(8)
+"""The ID of the "Start" button. Used by the :attr:`Button.index` and
+:attr:`keypad.Event.key_number` attributes.
+"""
+
 BUTTON_SELECT = const(9)
+"""The ID of the "Select" button. Used by the :attr:`Button.index` and
+:attr:`keypad.Event.key_number` attributes.
+"""
+
 BUTTON_HOME = const(10)
+"""The ID of the "Home" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
+attributes.
+"""
+
 BUTTON_L1 = const(11)
+"""The ID of the "L1" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
+attributes.
+"""
+
 BUTTON_R1 = const(12)
+"""The ID of the "R1" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
+attributes.
+"""
+
 BUTTON_L2 = const(13)
+"""The ID of the "L2" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
+attributes.
+"""
+
 BUTTON_R2 = const(14)
+"""The ID of the "R2" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
+attributes.
+"""
+
 BUTTON_L3 = const(15)
+"""The ID of the "L3" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
+attributes.
+"""
+
 BUTTON_R3 = const(16)
+"""The ID of the "R3" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
+attributes.
+"""
+
 BUTTON_JOYSTICK_UP = const(17)
+"""The ID of the "Joystick Up" button which is triggered when the left joystick exceeds the analog
+threshold in the up direction. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
+attributes.
+"""
+
 BUTTON_JOYSTICK_DOWN = const(18)
+"""The ID of the "Joystick Down" button which is triggered when the left joystick exceeds the analog
+threshold in the down direction. Used by the :attr:`Button.index` and
+:attr:`keypad.Event.key_number` attributes.
+"""
+
 BUTTON_JOYSTICK_LEFT = const(19)
+"""The ID of the "Joystick Left" button which is triggered when the left joystick exceeds the analog
+threshold in the left direction. Used by the :attr:`Button.index` and
+:attr:`keypad.Event.key_number` attributes.
+"""
+
 BUTTON_JOYSTICK_RIGHT = const(20)
+"""The ID of the "Joystick Right" button which is triggered when the left joystick exceeds the
+analog threshold in the right direction. Used by the :attr:`Button.index` and
+:attr:`keypad.Event.key_number` attributes.
+"""
 
 
 class Button:
-    def __init__(self, value: int, pressed: bool = False):
-        assert self.A <= value <= _BUTTON_ID_JOYSTICK_RIGHT
-        self._value = value
-        self._pressed = pressed
-        self._changed = False
+    def __init__(self, index: int):
+        assert 0 <= index <= len(BUTTON_NAMES)
+        self._mask = 1 << index
 
-    def __str__(self) -> str:
-        return " ".join((_BUTTON_NAMES[self._value], "Pressed" if self._pressed else "Released"))
+    def __get__(self, obj: Optional[Buttons], objtype: Optional[Type[Buttons]] = None):
+        return obj._pressed & self._mask
 
-    def __hash__(self) -> int:
-        return self.__value
-
-    def __eq__(self, other) -> bool:
-        if type(other) is int:
-            return self._value == other
+    def __set__(self, obj: Optional[Buttons], value: bool):
+        if bool(obj._pressed & self._mask) != value:
+            obj._changed |= self._mask
         else:
-            return self._value == other._value
+            obj._changed &= ~self._mask
 
-    @property
-    def value(self) -> int:
-        return self._value
-
-    @property
-    def pressed(self) -> bool:
-        return self._pressed
-
-    @pressed.setter
-    def pressed(self, value: bool) -> None:
-        self._changed = self._pressed != value
-        self._pressed = value
-
-    @property
-    def released(self) -> bool:
-        return not self._pressed
-
-    @released.setter
-    def released(self, value: bool) -> None:
-        self.pressed = not value
-
-    @property
-    def changed(self) -> bool:
-        return self._changed
-    
-    @property
-    def event(self) -> keypad.Event:
-        return keypad.Event(self._value, self._pressed)
+        if value:
+            obj._pressed |= self._mask
+        else:
+            obj._pressed &= ~self._mask
 
 
 class Buttons:
+    """The class which handles the state of each digital button of a :class:`Gamepad` device."""
+
+    A: bool = Button(BUTTON_A)
+    B: bool = Button(BUTTON_B)
+    X: bool = Button(BUTTON_X)
+    Y: bool = Button(BUTTON_Y)
+    UP: bool = Button(BUTTON_UP)
+    DOWN: bool = Button(BUTTON_DOWN)
+    LEFT: bool = Button(BUTTON_LEFT)
+    RIGHT: bool = Button(BUTTON_RIGHT)
+    START: bool = Button(BUTTON_START)
+    SELECT: bool = Button(BUTTON_SELECT)
+    HOME: bool = Button(BUTTON_HOME)
+    L1: bool = Button(BUTTON_L1)
+    R1: bool = Button(BUTTON_R1)
+    L2: bool = Button(BUTTON_L2)
+    R2: bool = Button(BUTTON_R2)
+    L3: bool = Button(BUTTON_L3)
+    R3: bool = Button(BUTTON_R3)
+    JOYSTICK_UP: bool = Button(BUTTON_JOYSTICK_UP)
+    JOYSTICK_DOWN: bool = Button(BUTTON_JOYSTICK_DOWN)
+    JOYSTICK_LEFT: bool = Button(BUTTON_JOYSTICK_LEFT)
+    JOYSTICK_RIGHT: bool = Button(BUTTON_JOYSTICK_RIGHT)
+
     def __init__(self):
-        self.A = Button(BUTTON_A)
-        self.B = Button(BUTTON_B)
-        self.X = Button(BUTTON_X)
-        self.Y = Button(BUTTON_Y)
-        self.UP = Button(BUTTON_UP)
-        self.DOWN = Button(BUTTON_DOWN)
-        self.LEFT = Button(BUTTON_LEFT)
-        self.RIGHT = Button(BUTTON_RIGHT)
-        self.START = Button(BUTTON_START)
-        self.SELECT = Button(BUTTON_SELECT)
-        self.HOME = Button(BUTTON_HOME)
-        self.L1 = Button(BUTTON_L1)
-        self.R1 = Button(BUTTON_R1)
-        self.L2 = Button(BUTTON_L2)
-        self.R2 = Button(BUTTON_R2)
-        self.L3 = Button(BUTTON_L3)
-        self.R3 = Button(BUTTON_R3)
-        self.JOYSTICK_UP = Button(BUTTON_JOYSTICK_UP)
-        self.JOYSTICK_DOWN = Button(BUTTON_JOYSTICK_DOWN)
-        self.JOYSTICK_LEFT = Button(BUTTON_JOYSTICK_LEFT)
-        self.JOYSTICK_RIGHT = Button(BUTTON_JOYSTICK_RIGHT)
+        """Initializes the state of all digital button inputs."""
+        self.reset()
 
     def __iter__(self):
-        for x in _BUTTON_NAMES:
+        for x in BUTTON_NAMES:
             yield getattr(self, x)
 
-    def __getitem__(self, index: int) -> Button:
-        return getattr(self, _BUTTON_NAMES[index])
+    def __getitem__(self, index: int) -> bool:
+        return getattr(self, BUTTON_NAMES[index])
 
     def __len__(self) -> int:
-        return len(_BUTTON_NAMES)
+        return len(BUTTON_NAMES)
 
-    def get_changed(self) -> tuple:
-        return tuple([x for x in self if x.changed])
+    @property
+    def events(self) -> tuple:
+        return tuple([keypad.Event(i, x) for i, x in enumerate(self) if self._changed & (1 << i)])
 
-    def is_changed(self) -> bool:
+    @property
+    def changed(self) -> bool:
         try:
-            next(x for x in self if x.changed)
+            next(x for i, x in enumerate(self) if self._changed & (1 << i))
         except StopIteration:
             return False
         finally:
             return True
+
+    def reset(self) -> None:
+        """Reset the state of all buttons to "Released"."""
+        self._pressed = 0
+        self._changed = 0
 
 
 class State:
@@ -238,7 +313,7 @@ class State:
         if type(value) is float:
             value = int(value * 255)
         self._left_trigger = min(max(value, 0), 255)
-        self._buttons.L2.pressed = self._left_trigger >= _TRIGGER_THRESHOLD
+        self._buttons.L2 = self._left_trigger >= _TRIGGER_THRESHOLD
 
     @property
     def right_trigger(self) -> float:
@@ -249,7 +324,7 @@ class State:
         if type(value) is float:
             value = int(value * 255)
         self._right_trigger = min(max(value, 0), 255)
-        self._buttons.R2.pressed = self._right_trigger >= _TRIGGER_THRESHOLD
+        self._buttons.R2 = self._right_trigger >= _TRIGGER_THRESHOLD
 
     @property
     def left_joystick(self) -> tuple:
@@ -268,10 +343,10 @@ class State:
         self._left_joystick_x = min(max(x, -32768), 32767)
         self._left_joystick_y = min(max(y, -32768), 32767)
 
-        self._buttons.JOYSTICK_RIGHT.pressed = self._left_joystick_x >= _JOYSTICK_THRESHOLD
-        self._buttons.JOYSTICK_LEFT.pressed = self._left_joystick_x <= -_JOYSTICK_THRESHOLD
-        self._buttons.JOYSTICK_UP.pressed = self._left_joystick_y >= _JOYSTICK_THRESHOLD
-        self._buttons.JOYSTICK_DOWN.pressed = self._left_joystick_y <= -_JOYSTICK_THRESHOLD
+        self._buttons.JOYSTICK_RIGHT = self._left_joystick_x >= _JOYSTICK_THRESHOLD
+        self._buttons.JOYSTICK_LEFT = self._left_joystick_x <= -_JOYSTICK_THRESHOLD
+        self._buttons.JOYSTICK_UP = self._left_joystick_y >= _JOYSTICK_THRESHOLD
+        self._buttons.JOYSTICK_DOWN = self._left_joystick_y <= -_JOYSTICK_THRESHOLD
 
     @property
     def right_joystick(self) -> tuple:
@@ -292,8 +367,7 @@ class State:
         self._right_joystick_y = min(max(y, -32768), 32767)
 
     def reset(self) -> None:
-        for button in self._buttons:
-            button.pressed = False
+        self._buttons.reset()
         self._left_trigger = 0
         self._right_trigger = 0
         self._left_joystick_x = 0
@@ -450,13 +524,12 @@ class Device:
             try:
                 self.read()
                 return True
-            except usb.core.USBTimeoutError:
+            except (usb.core.USBTimeoutError, usb.core.USBError):
                 pass
         return False
 
-    def read(self) -> tuple:
-        count = self._device.read(self._in_endpoint.address, self._report, timeout=self._interval)
-        return count
+    def read(self) -> int:
+        return self._device.read(self._in_endpoint.address, self._report, timeout=self._interval)
 
     def flush(self) -> None:
         for i in range(8):
@@ -508,18 +581,18 @@ class SwitchProDevice(Device):
         self.write(msg)
 
     def _update_state(self, state: State) -> None:
-        state.buttons.Y.pressed = bool(self._report[2] & 0x01)
-        state.buttons.X.pressed = bool(self._report[2] & 0x02)
-        state.buttons.B.pressed = bool(self._report[2] & 0x04)
-        state.buttons.A.pressed = bool(self._report[2] & 0x08)
-        state.buttons.R1.pressed = bool(self._report[2] & 0x40)
-        state.buttons.SELECT.pressed = bool(self._report[3] & 0x01)
-        state.buttons.START.pressed = bool(self._report[3] & 0x02)
-        state.buttons.DOWN.pressed = bool(self._report[4] & 0x01)
-        state.buttons.UP.pressed = bool(self._report[4] & 0x02)
-        state.buttons.RIGHT.pressed = bool(self._report[4] & 0x04)
-        state.buttons.LEFT.pressed = bool(self._report[4] & 0x08)
-        state.buttons.L1.pressed = bool(self._report[4] & 0x40)
+        state.buttons.Y = bool(self._report[2] & 0x01)
+        state.buttons.X = bool(self._report[2] & 0x02)
+        state.buttons.B = bool(self._report[2] & 0x04)
+        state.buttons.A = bool(self._report[2] & 0x08)
+        state.buttons.R1 = bool(self._report[2] & 0x40)
+        state.buttons.SELECT = bool(self._report[3] & 0x01)
+        state.buttons.START = bool(self._report[3] & 0x02)
+        state.buttons.DOWN = bool(self._report[4] & 0x01)
+        state.buttons.UP = bool(self._report[4] & 0x02)
+        state.buttons.RIGHT = bool(self._report[4] & 0x04)
+        state.buttons.LEFT = bool(self._report[4] & 0x08)
+        state.buttons.L1 = bool(self._report[4] & 0x40)
 
 
 class XInputDevice(Device):
@@ -550,19 +623,19 @@ class XInputDevice(Device):
         self.write(msg)
 
     def _update_state(self, state: State) -> None:
-        state.buttons.UP.pressed = bool(self._report[2] & 0x01)
-        state.buttons.DOWN.pressed = bool(self._report[2] & 0x02)
-        state.buttons.LEFT.pressed = bool(self._report[2] & 0x04)
-        state.buttons.RIGHT.pressed = bool(self._report[2] & 0x08)
-        state.buttons.START.pressed = bool(self._report[2] & 0x10)
-        state.buttons.SELECT.pressed = bool(self._report[2] & 0x20)
-        state.buttons.L1.pressed = bool(self._report[3] & 0x01)
-        state.buttons.R1.pressed = bool(self._report[3] & 0x02)
-        state.buttons.HOME.pressed = bool(self._report[3] & 0x04)
-        state.buttons.B.pressed = bool(self._report[3] & 0x10)
-        state.buttons.A.pressed = bool(self._report[3] & 0x20)
-        state.buttons.Y.pressed = bool(self._report[3] & 0x40)
-        state.buttons.X.pressed = bool(self._report[3] & 0x80)
+        state.buttons.UP = bool(self._report[2] & 0x01)
+        state.buttons.DOWN = bool(self._report[2] & 0x02)
+        state.buttons.LEFT = bool(self._report[2] & 0x04)
+        state.buttons.RIGHT = bool(self._report[2] & 0x08)
+        state.buttons.START = bool(self._report[2] & 0x10)
+        state.buttons.SELECT = bool(self._report[2] & 0x20)
+        state.buttons.L1 = bool(self._report[3] & 0x01)
+        state.buttons.R1 = bool(self._report[3] & 0x02)
+        state.buttons.HOME = bool(self._report[3] & 0x04)
+        state.buttons.B = bool(self._report[3] & 0x10)
+        state.buttons.A = bool(self._report[3] & 0x20)
+        state.buttons.Y = bool(self._report[3] & 0x40)
+        state.buttons.X = bool(self._report[3] & 0x80)
 
         state.left_trigger = self._report[4]
         state.right_trigger = self._report[5]
@@ -589,19 +662,19 @@ class AdafruitSnesDevice(Device):
         )
 
     def _update_state(self, state: State) -> None:
-        state.buttons.LEFT.pressed = self._report[0] == 0x00
-        state.buttons.RIGHT.pressed = self._report[0] == 0xFF
-        state.buttons.UP.pressed = self._report[1] == 0x00
-        state.buttons.DOWN.pressed = self._report[1] == 0xFF
+        state.buttons.LEFT = self._report[0] == 0x00
+        state.buttons.RIGHT = self._report[0] == 0xFF
+        state.buttons.UP = self._report[1] == 0x00
+        state.buttons.DOWN = self._report[1] == 0xFF
 
-        state.buttons.X.pressed = bool(self._report[5] & 0x10)
-        state.buttons.A.pressed = bool(self._report[5] & 0x20)
-        state.buttons.B.pressed = bool(self._report[5] & 0x40)
-        state.buttons.Y.pressed = bool(self._report[5] & 0x80)
-        state.buttons.L1.pressed = bool(self._report[6] & 0x01)
-        state.buttons.R1.pressed = bool(self._report[6] & 0x02)
-        state.buttons.SELECT.pressed = bool(self._report[6] & 0x10)
-        state.buttons.START.pressed = bool(self._report[6] & 0x20)
+        state.buttons.X = bool(self._report[5] & 0x10)
+        state.buttons.A = bool(self._report[5] & 0x20)
+        state.buttons.B = bool(self._report[5] & 0x40)
+        state.buttons.Y = bool(self._report[5] & 0x80)
+        state.buttons.L1 = bool(self._report[6] & 0x01)
+        state.buttons.R1 = bool(self._report[6] & 0x02)
+        state.buttons.SELECT = bool(self._report[6] & 0x10)
+        state.buttons.START = bool(self._report[6] & 0x20)
 
 
 class Zero2Device(Device):  # 8BitDo
@@ -616,14 +689,14 @@ class Zero2Device(Device):  # 8BitDo
         )
 
     def _update_state(self, state: State) -> None:
-        state.buttons.A.pressed = bool(self._report[0] & 0x01)
-        state.buttons.B.pressed = bool(self._report[0] & 0x02)
-        state.buttons.X.pressed = bool(self._report[0] & 0x08)
-        state.buttons.Y.pressed = bool(self._report[0] & 0x10)
-        state.buttons.L1.pressed = bool(self._report[0] & 0x40)
-        state.buttons.R1.pressed = bool(self._report[0] & 0x80)
-        state.buttons.SELECT.pressed = bool(self._report[1] & 0x04)
-        state.buttons.START.pressed = bool(self._report[1] & 0x08)
+        state.buttons.A = bool(self._report[0] & 0x01)
+        state.buttons.B = bool(self._report[0] & 0x02)
+        state.buttons.X = bool(self._report[0] & 0x08)
+        state.buttons.Y = bool(self._report[0] & 0x10)
+        state.buttons.L1 = bool(self._report[0] & 0x40)
+        state.buttons.R1 = bool(self._report[0] & 0x80)
+        state.buttons.SELECT = bool(self._report[1] & 0x04)
+        state.buttons.START = bool(self._report[1] & 0x08)
 
         # 4-bit BCD
         state.buttons.UP = self._report[2] in {0x07, 0x00, 0x01}
@@ -788,7 +861,7 @@ class Gamepad:
     @property
     def events(self) -> tuple:
         if self.update():
-            return tuple([button.event for button in self._state.buttons.get_changed()])
+            return tuple([button.event for button in self._state.buttons.events])
         return tuple()
 
     @property
