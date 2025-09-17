@@ -54,34 +54,47 @@ _JOYSTICK_THRESHOLD = const(8192)
 
 # USB detected device types
 
-_DEVICE_TYPE_UNKNOWN = const(0)
-_DEVICE_TYPE_SWITCH_PRO = const(1)  # 057e:2009 clones of Switch Pro Controller
-_DEVICE_TYPE_ADAFRUIT_SNES = const(2)  # 081f:e401 generic SNES layout HID, low-speed
-_DEVICE_TYPE_8BITDO_ZERO2 = const(3)  # 2dc8:9018 mini SNES layout, HID over USB-C
-_DEVICE_TYPE_XINPUT = const(4)  # (vid:pid vary) Clones of Xbox360 controller
-_DEVICE_TYPE_POWERA_WIRED = const(5)  # 20d6:a711 PowerA Wired Controller (for Switch)
+DEVICE_TYPE_UNKNOWN = const(0)
+"""An unknown usb device."""
+
+DEVICE_TYPE_SWITCH_PRO = const(1)  # 057e:2009 clones of Switch Pro Controller
+"""The type of a usb gamepad device which has been identified as a Switch Pro Controller."""
+
+DEVICE_TYPE_ADAFRUIT_SNES = const(2)  # 081f:e401 generic SNES layout HID, low-speed
+"""The type of a usb gamepad device which has been identified as an Adafruit SNES controller."""
+
+DEVICE_TYPE_8BITDO_ZERO2 = const(3)  # 2dc8:9018 mini SNES layout, HID over USB-C
+"""The type of a usb gamepad device which has been identified as an 8BitDo Zero 2 controller."""
+
+DEVICE_TYPE_XINPUT = const(4)  # (vid:pid vary) Clones of Xbox360 controller
+"""The type of a usb gamepad device which has been identified as an X-Input compatible controller."""
+
+DEVICE_TYPE_POWERA_WIRED = const(5)  # 20d6:a711 PowerA Wired Controller (for Switch)
+"""The type of a usb gamepad device which has been identified as an Adafruit SNES controller."""
 
 _DEVICE_TYPES = (
     # (index, vid, pid),
-    (_DEVICE_TYPE_SWITCH_PRO, 0x057E, 0x2009),
-    (_DEVICE_TYPE_ADAFRUIT_SNES, 0x081F, 0xE401),
-    (_DEVICE_TYPE_8BITDO_ZERO2, 0x2DC8, 0x9018),
-    (_DEVICE_TYPE_POWERA_WIRED, 0x20D6, 0xA711),
+    (DEVICE_TYPE_SWITCH_PRO, 0x057E, 0x2009),
+    (DEVICE_TYPE_ADAFRUIT_SNES, 0x081F, 0xE401),
+    (DEVICE_TYPE_8BITDO_ZERO2, 0x2DC8, 0x9018),
+    (DEVICE_TYPE_POWERA_WIRED, 0x20D6, 0xA711),
 )
 
 _DEVICE_CLASSES = (
     # (index, device class, device subclass, interface 0 class, interface 0 subclass),
-    (_DEVICE_TYPE_XINPUT, 0xFF, 0xFF, 0xFF, 0x5D),
+    (DEVICE_TYPE_XINPUT, 0xFF, 0xFF, 0xFF, 0x5D),
 )
 
-_DEVICE_NAMES = (
-    (_DEVICE_TYPE_UNKNOWN, "Unknown"),
-    (_DEVICE_TYPE_SWITCH_PRO, "Switch Pro Controller"),
-    (_DEVICE_TYPE_ADAFRUIT_SNES, "Adafruit SNES Controller"),
-    (_DEVICE_TYPE_8BITDO_ZERO2, "8BitDo Zero 2"),
-    (_DEVICE_TYPE_XINPUT, "Generic XInput"),
-    (_DEVICE_TYPE_POWERA_WIRED, "PowerA Wired Controller"),
+DEVICE_NAMES = (
+    "Unknown",
+    "Switch Pro Controller",
+    "Adafruit SNES Controller",
+    "8BitDo Zero 2",
+    "Generic XInput",
+    "PowerA Wired Controller",
 )
+"""A list of all device names following the appropriate device type id. Useful for print statements.
+"""
 
 BUTTON_NAMES = (
     "A",
@@ -106,6 +119,9 @@ BUTTON_NAMES = (
     "JOYSTICK_LEFT",
     "JOYSTICK_RIGHT",
 )
+"""A list of all button names following the appropriate key number order. Useful for print
+statements.
+"""
 
 BUTTON_A = const(0)
 """The ID of the "A" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
@@ -278,10 +294,17 @@ class Buttons:
 
     @property
     def events(self) -> tuple:
+        """A list of all changed button states since the last :class:`Gamepad` device update
+        represented as :class:`keypad.Event` objects. The :attr:`keypad.Event.key_number` value
+        represents the button ID.
+        """
         return tuple([keypad.Event(i, x) for i, x in enumerate(self) if self._changed & (1 << i)])
 
     @property
     def changed(self) -> bool:
+        """Whether or not the state of any buttons has changed since the last :class:`Gamepad`
+        device update.
+        """
         try:
             next(x for i, x in enumerate(self) if self._changed & (1 << i))
         except StopIteration:
@@ -290,12 +313,13 @@ class Buttons:
             return True
 
     def reset(self) -> None:
-        """Reset the state of all buttons to "Released"."""
+        """Reset the state of all buttons to be released."""
         self._pressed = 0
         self._changed = 0
 
 
 class State:
+
     def __init__(self):
         self._buttons = Buttons()
         self.reset()
@@ -327,11 +351,11 @@ class State:
         self._buttons.R2 = self._right_trigger >= _TRIGGER_THRESHOLD
 
     @property
-    def left_joystick(self) -> tuple:
+    def left_joystick(self) -> tuple[int]:
         return (self._left_joystick_x / 32768, self._left_joystick_y / 32768)
 
     @left_joystick.setter
-    def left_joystick(self, value: tuple) -> None:
+    def left_joystick(self, value: tuple[int]) -> None:
         if len(value) != 2:
             raise ValueError("value must be in the format of (x, y)")
 
@@ -407,7 +431,7 @@ def _get_device_type(
                 print("found device type:", device_type)
             return device_type
 
-    return _DEVICE_TYPE_UNKNOWN
+    return DEVICE_TYPE_UNKNOWN
 
 
 def _report_equals(a: bytearray, b: bytearray, length: int = None) -> bool:
@@ -547,7 +571,7 @@ class SwitchProDevice(Device):
         debug: bool = False,
     ):
         super().__init__(
-            device, _DEVICE_TYPE_SWITCH_PRO, device_descriptor=device_descriptor, debug=debug
+            device, DEVICE_TYPE_SWITCH_PRO, device_descriptor=device_descriptor, debug=debug
         )
 
         # perform handshake
@@ -603,7 +627,7 @@ class XInputDevice(Device):
         debug: bool = False,
     ):
         super().__init__(
-            device, _DEVICE_TYPE_XINPUT, device_descriptor=device_descriptor, debug=debug
+            device, DEVICE_TYPE_XINPUT, device_descriptor=device_descriptor, debug=debug
         )
         self.flush()  # ignore initial reports before normal operation
 
@@ -658,7 +682,7 @@ class AdafruitSnesDevice(Device):
         debug: bool = False,
     ):
         super().__init__(
-            device, _DEVICE_TYPE_ADAFRUIT_SNES, device_descriptor=device_descriptor, debug=debug
+            device, DEVICE_TYPE_ADAFRUIT_SNES, device_descriptor=device_descriptor, debug=debug
         )
 
     def _update_state(self, state: State) -> None:
@@ -685,7 +709,7 @@ class Zero2Device(Device):  # 8BitDo
         debug: bool = False,
     ):
         super().__init__(
-            device, _DEVICE_TYPE_ADAFRUIT_SNES, device_descriptor=device_descriptor, debug=debug
+            device, DEVICE_TYPE_ADAFRUIT_SNES, device_descriptor=device_descriptor, debug=debug
         )
 
     def _update_state(self, state: State) -> None:
@@ -713,7 +737,7 @@ class PowerAWiredDevice(Device):
         debug: bool = False,
     ):
         super().__init__(
-            device, _DEVICE_TYPE_POWERA_WIRED, device_descriptor=device_descriptor, debug=debug
+            device, DEVICE_TYPE_POWERA_WIRED, device_descriptor=device_descriptor, debug=debug
         )
 
     def _update_state(self, state: State) -> None:
@@ -740,15 +764,15 @@ def _create_device(
     device_descriptor: DeviceDescriptor = None,
     debug: bool = False,
 ):
-    if device_type == _DEVICE_TYPE_SWITCH_PRO:
+    if device_type == DEVICE_TYPE_SWITCH_PRO:
         return SwitchProDevice(device, device_descriptor=device_descriptor, debug=debug)
-    elif device_type == _DEVICE_TYPE_XINPUT:
+    elif device_type == DEVICE_TYPE_XINPUT:
         return XInputDevice(device, device_descriptor=device_descriptor, debug=debug)
-    elif device_type == _DEVICE_TYPE_ADAFRUIT_SNES:
+    elif device_type == DEVICE_TYPE_ADAFRUIT_SNES:
         return AdafruitSnesDevice(device, device_descriptor=device_descriptor, debug=debug)
-    elif device_type == _DEVICE_TYPE_8BITDO_ZERO2:
+    elif device_type == DEVICE_TYPE_8BITDO_ZERO2:
         return Zero2Device(device, device_descriptor=device_descriptor, debug=debug)
-    elif device_type == _DEVICE_TYPE_POWERA_WIRED:
+    elif device_type == DEVICE_TYPE_POWERA_WIRED:
         return PowerAWiredDevice(device, device_descriptor=device_descriptor, debug=debug)
     else:
         raise ValueError("Unknown device type")
@@ -759,9 +783,6 @@ _failed_devices = []
 
 
 def _find_device(port: int = None, debug: bool = False) -> Device:  # noqa: PLR0912
-    if port is not None and (port < 1 or port > 2):
-        raise ValueError("Only ports 1-2 supported")
-
     for device in usb.core.find(find_all=True):
         device_id = (device.idVendor, device.idProduct)
         if (port,) + device_id in _connected_devices or device_id in _failed_devices:
@@ -769,12 +790,11 @@ def _find_device(port: int = None, debug: bool = False) -> Device:  # noqa: PLR0
 
         if port is not None:
             port_numbers = device.port_numbers
-            if port == 1 and port_numbers is not None and port_numbers != (1,):
-                # Board has USB hub, but device is not plugged into port 1
+            if port != 1 and port_numbers is None:
+                # Board does not have USB hub, but a port greater than 1 is requested
                 continue
-            if port == 2 and (port_numbers is None or port_numbers != (2,)):
-                # Board doesn't have a USB hub,or it has a hub but the device is not plugged into
-                # port 2
+            if port_numbers is not None and port_numbers != (port,):
+                # Board has USB hub, but device is not plugged into the specified port
                 continue
 
         if debug:
@@ -795,14 +815,14 @@ def _find_device(port: int = None, debug: bool = False) -> Device:  # noqa: PLR0
             device_type := _get_device_type(
                 device, device_descriptor=device_descriptor, debug=debug
             )
-        ) == _DEVICE_TYPE_UNKNOWN:
+        ) == DEVICE_TYPE_UNKNOWN:
             if debug:
                 print("device not recognized")
             _failed_devices.append(device_id)
             continue
         elif debug:
             print(
-                "device identified:", next((name for x, name in _DEVICE_NAMES if x == device_type))
+                "device identified:", next((name for i, name in enumerate(DEVICE_NAMES) if i == device_type))
             )
 
         try:
@@ -821,10 +841,19 @@ def _find_device(port: int = None, debug: bool = False) -> Device:  # noqa: PLR0
 
 
 class Gamepad:
-    def __init__(self, port: int = None, debug: bool = False) -> None:
-        if port is not None and (port < 1 or port > 2):
-            raise ValueError("Only ports 1-2 supported")
+    """Helper class which coordinates device identification, initialization and reading for
+    supported USB gamepad devices.
+    """
 
+    def __init__(self, port: int = None, debug: bool = False) -> None:
+        """Initializes the :class:`Gamepad` device helper.
+
+        :param port: If using a USB hub such as the CH334F, you can specify the desired physical
+            port to communicate with. This is useful for reading from multiple gamepad devices with
+            a specific device location for each. Use `None` to allow this class to communicate with
+            devices on any USB port.
+        :param debug: Set this value to `True` to generate verbose debug messages over REPL.
+        """
         self._port = port
         self._debug = debug
 
@@ -836,6 +865,13 @@ class Gamepad:
         self._timestamp = time.monotonic() - _SEARCH_DELAY
 
     def update(self) -> bool:
+        """Update the gamepad device. If no device is current active, it will attempt to identify
+        and connect with a USB device at most once every second. If a device is active, it will poll
+        it and update the gamepad state. If the device is deemed that it is no longer responsive, it
+        will be automatically disconnected.
+
+        :return: Whether or not the state of the gamepad was updated.
+        """
         if self._device is None and time.monotonic() - self._timestamp >= _SEARCH_DELAY:
             self._device = _find_device(self._port, debug=self._debug)
             if self._device is not None:
@@ -860,43 +896,64 @@ class Gamepad:
 
     @property
     def events(self) -> tuple:
+        """Updates the gamepad device and returns a tuple of button events as :class:`keypad.Event`
+        objects.
+        """
         if self.update():
-            return tuple([button.event for button in self._state.buttons.events])
+            return self._state.buttons.events
         return tuple()
 
     @property
     def port(self) -> int:
+        """The designated port number when the gamepad was initialized."""
         return self._port
 
     @property
     def connected(self) -> bool:
+        """Whether or not a usb gamepad device is connected."""
         return self._device is not None
 
     @property
     def device_type(self) -> int:
-        return _DEVICE_TYPE_UNKNOWN
+        """The id of the device type if a usb gamepad device is connected. Otherwise, it
+        will be :const:`DEVICE_TYPE_UNKNOWN`.
+        """
+        return self._device.device_id if self._device is not None else DEVICE_TYPE_UNKNOWN
 
     @property
     def buttons(self) -> Buttons:
+        """The object which handles the state of all digital button inputs."""
         return self._state.buttons
 
     @property
     def left_trigger(self) -> float:
+        """The value of the analog left trigger from 0.0 to 1.0."""
         return self._state.left_trigger
 
     @property
     def right_trigger(self) -> float:
+        """The value of the analog right trigger from 0.0 to 1.0."""
         return self._state.right_trigger
 
     @property
     def left_joystick(self) -> tuple:
+        """The position of the left analog joystick on each axis from -1.0 to 1.0 represented as a
+        tuple with the format (x, y).
+        """
         return self._state.left_joystick
 
     @property
     def right_joystick(self) -> tuple:
+        """The position of the right analog joystick on each axis from -1.0 to 1.0 represented as a
+        tuple with the format (x, y).
+        """
         return self._state.right_joystick
 
     def disconnect(self) -> bool:
+        """Disconnect from the usb gamepad device if one is currently active.
+
+        :return: If there is no active device, it will return `False`. Otherwise, `True`.
+        """
         if self._device is None:
             return False
         if self._debug:
