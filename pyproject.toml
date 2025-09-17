@@ -53,3 +53,6 @@ py-modules = ["relic_usb_host_gamepad"]
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
 optional-dependencies = {optional = {file = ["optional_requirements.txt"]}}
+
+[circup]
+circup_dependencies = ["relic_usb_host_descriptor_parser"]
