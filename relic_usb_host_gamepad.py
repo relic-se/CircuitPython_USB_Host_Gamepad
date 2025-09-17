@@ -42,11 +42,6 @@ from micropython import const
 from relic_usb_host_descriptor_parser import DeviceDescriptor
 from usb.util import SPEED_HIGH
 
-try:
-    from typing import Optional, Type
-except ImportError:
-    pass
-
 _MAX_TIMEOUTS = const(99)
 _SEARCH_DELAY = const(1)
 _TRIGGER_THRESHOLD = const(128)
@@ -236,13 +231,13 @@ analog threshold in the right direction. Used by the :attr:`Button.index` and
 
 class Button:
     def __init__(self, index: int):
-        assert 0 <= index <= len(BUTTON_NAMES)
+        assert 0 <= index < len(BUTTON_NAMES)
         self._mask = 1 << index
 
-    def __get__(self, obj: Optional[Buttons], objtype: Optional[Type[Buttons]] = None):
+    def __get__(self, obj, objtype = None):
         return obj._pressed & self._mask
 
-    def __set__(self, obj: Optional[Buttons], value: bool):
+    def __set__(self, obj, value: bool):
         if bool(obj._pressed & self._mask) != value:
             obj._changed |= self._mask
         else:
