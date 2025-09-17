@@ -49,36 +49,36 @@ _JOYSTICK_THRESHOLD = const(8192)
 
 # USB detected device types
 
-DEVICE_TYPE_UNKNOWN = const(0)
-DEVICE_TYPE_SWITCH_PRO = const(1)  # 057e:2009 clones of Switch Pro Controller
-DEVICE_TYPE_ADAFRUIT_SNES = const(2)  # 081f:e401 generic SNES layout HID, low-speed
-DEVICE_TYPE_8BITDO_ZERO2 = const(3)  # 2dc8:9018 mini SNES layout, HID over USB-C
-DEVICE_TYPE_XINPUT = const(4)  # (vid:pid vary) Clones of Xbox360 controller
-DEVICE_TYPE_POWERA_WIRED = const(5)  # 20d6:a711 PowerA Wired Controller (for Switch)
+_DEVICE_TYPE_UNKNOWN = const(0)
+_DEVICE_TYPE_SWITCH_PRO = const(1)  # 057e:2009 clones of Switch Pro Controller
+_DEVICE_TYPE_ADAFRUIT_SNES = const(2)  # 081f:e401 generic SNES layout HID, low-speed
+_DEVICE_TYPE_8BITDO_ZERO2 = const(3)  # 2dc8:9018 mini SNES layout, HID over USB-C
+_DEVICE_TYPE_XINPUT = const(4)  # (vid:pid vary) Clones of Xbox360 controller
+_DEVICE_TYPE_POWERA_WIRED = const(5)  # 20d6:a711 PowerA Wired Controller (for Switch)
 
-DEVICE_TYPES = (
+_DEVICE_TYPES = (
     # (index, vid, pid),
-    (DEVICE_TYPE_SWITCH_PRO, 0x057E, 0x2009),
-    (DEVICE_TYPE_ADAFRUIT_SNES, 0x081F, 0xE401),
-    (DEVICE_TYPE_8BITDO_ZERO2, 0x2DC8, 0x9018),
-    (DEVICE_TYPE_POWERA_WIRED, 0x20D6, 0xA711),
+    (_DEVICE_TYPE_SWITCH_PRO, 0x057E, 0x2009),
+    (_DEVICE_TYPE_ADAFRUIT_SNES, 0x081F, 0xE401),
+    (_DEVICE_TYPE_8BITDO_ZERO2, 0x2DC8, 0x9018),
+    (_DEVICE_TYPE_POWERA_WIRED, 0x20D6, 0xA711),
 )
 
-DEVICE_CLASSES = (
+_DEVICE_CLASSES = (
     # (index, device class, device subclass, interface 0 class, interface 0 subclass),
-    (DEVICE_TYPE_XINPUT, 0xFF, 0xFF, 0xFF, 0x5D),
+    (_DEVICE_TYPE_XINPUT, 0xFF, 0xFF, 0xFF, 0x5D),
 )
 
-DEVICE_NAMES = (
-    (DEVICE_TYPE_UNKNOWN, "Unknown"),
-    (DEVICE_TYPE_SWITCH_PRO, "Switch Pro Controller"),
-    (DEVICE_TYPE_ADAFRUIT_SNES, "Adafruit SNES Controller"),
-    (DEVICE_TYPE_8BITDO_ZERO2, "8BitDo Zero 2"),
-    (DEVICE_TYPE_XINPUT, "Generic XInput"),
-    (DEVICE_TYPE_POWERA_WIRED, "PowerA Wired Controller"),
+_DEVICE_NAMES = (
+    (_DEVICE_TYPE_UNKNOWN, "Unknown"),
+    (_DEVICE_TYPE_SWITCH_PRO, "Switch Pro Controller"),
+    (_DEVICE_TYPE_ADAFRUIT_SNES, "Adafruit SNES Controller"),
+    (_DEVICE_TYPE_8BITDO_ZERO2, "8BitDo Zero 2"),
+    (_DEVICE_TYPE_XINPUT, "Generic XInput"),
+    (_DEVICE_TYPE_POWERA_WIRED, "PowerA Wired Controller"),
 )
 
-BUTTON_NAMES = (
+_BUTTON_NAMES = (
     "A",
     "B",
     "X",
@@ -133,7 +133,7 @@ class Button:
         self._changed = False
 
     def __str__(self) -> str:
-        return " ".join((BUTTON_NAMES[self._value], "Pressed" if self._pressed else "Released"))
+        return " ".join((_BUTTON_NAMES[self._value], "Pressed" if self._pressed else "Released"))
 
     def __hash__(self) -> int:
         return self.__value
@@ -195,14 +195,14 @@ class Buttons:
         self.JOYSTICK_RIGHT = Button(Button.JOYSTICK_RIGHT)
 
     def __iter__(self):
-        for x in BUTTON_NAMES:
+        for x in _BUTTON_NAMES:
             yield getattr(self, x)
 
     def __getitem__(self, index: int) -> Button:
-        return getattr(self, BUTTON_NAMES[index])
+        return getattr(self, _BUTTON_NAMES[index])
 
     def __len__(self) -> int:
-        return len(BUTTON_NAMES)
+        return len(_BUTTON_NAMES)
 
     def get_changed(self) -> tuple:
         return tuple([x for x in self if x.changed])
@@ -298,14 +298,14 @@ class State:
         self._right_joystick_y = 0
 
 
-def get_device_type(
+def _get_device_type(
     device: usb.core.Device, device_descriptor: DeviceDescriptor = None, debug: bool = False
 ) -> int:
     # identify device by id
     device_id = (device.idVendor, device.idProduct)
     if debug:
         print("identifying device by id (vid+pid):", [hex(x) for x in device_id])
-    for device_type, type_vid, type_pid in DEVICE_TYPES:
+    for device_type, type_vid, type_pid in _DEVICE_TYPES:
         if device_id == (type_vid, type_pid):
             if debug:
                 print("found device type:", device_type)
@@ -317,13 +317,13 @@ def get_device_type(
     class_identifier = device_descriptor.get_class_identifier()
     if debug:
         print("identifying device by class identifier:", [hex(x) for x in class_identifier])
-    for device_type, type_class, type_subclass, type_int_class, type_int_subclass in DEVICE_CLASSES:
+    for device_type, type_class, type_subclass, type_int_class, type_int_subclass in _DEVICE_CLASSES:
         if class_identifier == (type_class, type_subclass, type_int_class, type_int_subclass):
             if debug:
                 print("found device type:", device_type)
             return device_type
 
-    return DEVICE_TYPE_UNKNOWN
+    return _DEVICE_TYPE_UNKNOWN
 
 
 def _report_equals(a: bytearray, b: bytearray, length: int = None) -> bool:
@@ -464,7 +464,7 @@ class SwitchProDevice(Device):
         debug: bool = False,
     ):
         super().__init__(
-            device, DEVICE_TYPE_SWITCH_PRO, device_descriptor=device_descriptor, debug=debug
+            device, _DEVICE_TYPE_SWITCH_PRO, device_descriptor=device_descriptor, debug=debug
         )
 
         # perform handshake
@@ -520,7 +520,7 @@ class XInputDevice(Device):
         debug: bool = False,
     ):
         super().__init__(
-            device, DEVICE_TYPE_XINPUT, device_descriptor=device_descriptor, debug=debug
+            device, _DEVICE_TYPE_XINPUT, device_descriptor=device_descriptor, debug=debug
         )
         self.flush()  # ignore initial reports before normal operation
 
@@ -575,7 +575,7 @@ class AdafruitSnesDevice(Device):
         debug: bool = False,
     ):
         super().__init__(
-            device, DEVICE_TYPE_ADAFRUIT_SNES, device_descriptor=device_descriptor, debug=debug
+            device, _DEVICE_TYPE_ADAFRUIT_SNES, device_descriptor=device_descriptor, debug=debug
         )
 
     def _update_state(self, state: State) -> None:
@@ -602,7 +602,7 @@ class Zero2Device(Device):  # 8BitDo
         debug: bool = False,
     ):
         super().__init__(
-            device, DEVICE_TYPE_ADAFRUIT_SNES, device_descriptor=device_descriptor, debug=debug
+            device, _DEVICE_TYPE_ADAFRUIT_SNES, device_descriptor=device_descriptor, debug=debug
         )
 
     def _update_state(self, state: State) -> None:
@@ -630,7 +630,7 @@ class PowerAWiredDevice(Device):
         debug: bool = False,
     ):
         super().__init__(
-            device, DEVICE_TYPE_POWERA_WIRED, device_descriptor=device_descriptor, debug=debug
+            device, _DEVICE_TYPE_POWERA_WIRED, device_descriptor=device_descriptor, debug=debug
         )
 
     def _update_state(self, state: State) -> None:
@@ -657,15 +657,15 @@ def _create_device(
     device_descriptor: DeviceDescriptor = None,
     debug: bool = False,
 ):
-    if device_type == DEVICE_TYPE_SWITCH_PRO:
+    if device_type == _DEVICE_TYPE_SWITCH_PRO:
         return SwitchProDevice(device, device_descriptor=device_descriptor, debug=debug)
-    elif device_type == DEVICE_TYPE_XINPUT:
+    elif device_type == _DEVICE_TYPE_XINPUT:
         return XInputDevice(device, device_descriptor=device_descriptor, debug=debug)
-    elif device_type == DEVICE_TYPE_ADAFRUIT_SNES:
+    elif device_type == _DEVICE_TYPE_ADAFRUIT_SNES:
         return AdafruitSnesDevice(device, device_descriptor=device_descriptor, debug=debug)
-    elif device_type == DEVICE_TYPE_8BITDO_ZERO2:
+    elif device_type == _DEVICE_TYPE_8BITDO_ZERO2:
         return Zero2Device(device, device_descriptor=device_descriptor, debug=debug)
-    elif device_type == DEVICE_TYPE_POWERA_WIRED:
+    elif device_type == _DEVICE_TYPE_POWERA_WIRED:
         return PowerAWiredDevice(device, device_descriptor=device_descriptor, debug=debug)
     else:
         raise ValueError("Unknown device type")
@@ -709,15 +709,15 @@ def _find_device(port: int = None, debug: bool = False) -> Device:  # noqa: PLR0
 
         device_descriptor = DeviceDescriptor(device)
         if (
-            device_type := get_device_type(device, device_descriptor=device_descriptor, debug=debug)
-        ) == DEVICE_TYPE_UNKNOWN:
+            device_type := _get_device_type(device, device_descriptor=device_descriptor, debug=debug)
+        ) == _DEVICE_TYPE_UNKNOWN:
             if debug:
                 print("device not recognized")
             _failed_devices.append(device_id)
             continue
         elif debug:
             print(
-                "device identified:", next((name for x, name in DEVICE_NAMES if x == device_type))
+                "device identified:", next((name for x, name in _DEVICE_NAMES if x == device_type))
             )
 
         try:
@@ -791,7 +791,7 @@ class Gamepad:
 
     @property
     def device_type(self) -> int:
-        return DEVICE_TYPE_UNKNOWN
+        return _DEVICE_TYPE_UNKNOWN
 
     @property
     def buttons(self) -> Buttons:
