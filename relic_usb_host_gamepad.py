@@ -234,7 +234,7 @@ class Button:
         assert 0 <= index < len(BUTTON_NAMES)
         self._mask = 1 << index
 
-    def __get__(self, obj, objtype = None):
+    def __get__(self, obj, objtype=None):
         return obj._pressed & self._mask
 
     def __set__(self, obj, value: bool):
@@ -253,26 +253,75 @@ class Buttons:
     """The class which handles the state of each digital button of a :class:`Gamepad` device."""
 
     A: bool = Button(BUTTON_A)
+    """Whether or not the "A" button is pressed."""
+
     B: bool = Button(BUTTON_B)
+    """Whether or not the "B" button is pressed."""
+
     X: bool = Button(BUTTON_X)
+    """Whether or not the "X" button is pressed."""
+
     Y: bool = Button(BUTTON_Y)
+    """Whether or not the "Y" button is pressed."""
+
     UP: bool = Button(BUTTON_UP)
+    """Whether or not the "Up" button is pressed."""
+
     DOWN: bool = Button(BUTTON_DOWN)
+    """Whether or not the "Down" button is pressed."""
+
     LEFT: bool = Button(BUTTON_LEFT)
+    """Whether or not the "Left" button is pressed."""
+
     RIGHT: bool = Button(BUTTON_RIGHT)
+    """Whether or not the "Right" button is pressed."""
+
     START: bool = Button(BUTTON_START)
+    """Whether or not the "Start" button is pressed."""
+
     SELECT: bool = Button(BUTTON_SELECT)
+    """Whether or not the "Select" button is pressed."""
+
     HOME: bool = Button(BUTTON_HOME)
+    """Whether or not the "Home" button is pressed."""
+
     L1: bool = Button(BUTTON_L1)
+    """Whether or not the "L1" button is pressed."""
+
     R1: bool = Button(BUTTON_R1)
+    """Whether or not the "R1" button is pressed."""
+
     L2: bool = Button(BUTTON_L2)
+    """Whether or not the "L2" button is pressed."""
+
     R2: bool = Button(BUTTON_R2)
+    """Whether or not the "R2" button is pressed."""
+
     L3: bool = Button(BUTTON_L3)
+    """Whether or not the "L3" button is pressed."""
+
     R3: bool = Button(BUTTON_R3)
+    """Whether or not the "R3" button is pressed."""
+
     JOYSTICK_UP: bool = Button(BUTTON_JOYSTICK_UP)
+    """Whether or not the "Joystick Up" button is pressed which occurs when the left joystick
+    exceeds the analog threshold in the up direction.
+    """
+
     JOYSTICK_DOWN: bool = Button(BUTTON_JOYSTICK_DOWN)
+    """Whether or not the "Joystick Down" button is pressed which occurs when the left joystick
+    exceeds the analog threshold in the down direction.
+    """
+
     JOYSTICK_LEFT: bool = Button(BUTTON_JOYSTICK_LEFT)
+    """Whether or not the "Joystick Left" button is pressed which occurs when the left joystick
+    exceeds the analog threshold in the left direction.
+    """
+
     JOYSTICK_RIGHT: bool = Button(BUTTON_JOYSTICK_RIGHT)
+    """Whether or not the "Joystick Right" button is pressed which occurs when the left joystick
+    exceeds the analog threshold in the right direction.
+    """
 
     def __init__(self):
         """Initializes the state of all digital button inputs."""
