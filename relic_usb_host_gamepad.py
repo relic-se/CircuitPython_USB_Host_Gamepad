@@ -168,6 +168,10 @@ class Button:
     @property
     def changed(self) -> bool:
         return self._changed
+    
+    @property
+    def event(self) -> keypad.Event:
+        return keypad.Event(self._value, self._pressed)
 
 
 class Buttons:
@@ -783,11 +787,9 @@ class Gamepad:
 
     @property
     def events(self) -> tuple:
-        events = []
         if self.update():
-            for button in self._state.buttons.get_changed():
-                events.append(keypad.Event(button.value, button.pressed))
-        return tuple(events)
+            return tuple([button.event for button in self._state.buttons.get_changed()])
+        return tuple()
 
     @property
     def port(self) -> int:
