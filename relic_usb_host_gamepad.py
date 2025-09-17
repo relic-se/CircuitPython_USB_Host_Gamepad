@@ -50,13 +50,25 @@ _JOYSTICK_THRESHOLD = const(8192)
 # USB detected device types
 
 DEVICE_TYPE_UNKNOWN = const(0)
-DEVICE_TYPE_SWITCH_PRO = const(1)  # 057e:2009 clones of Switch Pro Controller
-DEVICE_TYPE_ADAFRUIT_SNES = const(2)  # 081f:e401 generic SNES layout HID, low-speed
-DEVICE_TYPE_8BITDO_ZERO2 = const(3)  # 2dc8:9018 mini SNES layout, HID over USB-C
-DEVICE_TYPE_XINPUT = const(4)  # (vid:pid vary) Clones of Xbox360 controller
-DEVICE_TYPE_POWERA_WIRED = const(5)  # 20d6:a711 PowerA Wired Controller (for Switch)
+"""An unknown usb device."""
 
-DEVICE_TYPES = (
+DEVICE_TYPE_SWITCH_PRO = const(1)  # 057e:2009 clones of Switch Pro Controller
+"""The type of a usb gamepad device which has been identified as a Switch Pro Controller."""
+
+DEVICE_TYPE_ADAFRUIT_SNES = const(2)  # 081f:e401 generic SNES layout HID, low-speed
+"""The type of a usb gamepad device which has been identified as an Adafruit SNES controller."""
+
+DEVICE_TYPE_8BITDO_ZERO2 = const(3)  # 2dc8:9018 mini SNES layout, HID over USB-C
+"""The type of a usb gamepad device which has been identified as an 8BitDo Zero 2 controller."""
+
+DEVICE_TYPE_XINPUT = const(4)  # (vid:pid vary) Clones of Xbox360 controller
+"""The type of a usb gamepad device which has been identified as an X-Input compatible controller.
+"""
+
+DEVICE_TYPE_POWERA_WIRED = const(5)  # 20d6:a711 PowerA Wired Controller (for Switch)
+"""The type of a usb gamepad device which has been identified as an Adafruit SNES controller."""
+
+_DEVICE_TYPES = (
     # (index, vid, pid),
     (DEVICE_TYPE_SWITCH_PRO, 0x057E, 0x2009),
     (DEVICE_TYPE_ADAFRUIT_SNES, 0x081F, 0xE401),
@@ -64,19 +76,21 @@ DEVICE_TYPES = (
     (DEVICE_TYPE_POWERA_WIRED, 0x20D6, 0xA711),
 )
 
-DEVICE_CLASSES = (
+_DEVICE_CLASSES = (
     # (index, device class, device subclass, interface 0 class, interface 0 subclass),
     (DEVICE_TYPE_XINPUT, 0xFF, 0xFF, 0xFF, 0x5D),
 )
 
 DEVICE_NAMES = (
-    (DEVICE_TYPE_UNKNOWN, "Unknown"),
-    (DEVICE_TYPE_SWITCH_PRO, "Switch Pro Controller"),
-    (DEVICE_TYPE_ADAFRUIT_SNES, "Adafruit SNES Controller"),
-    (DEVICE_TYPE_8BITDO_ZERO2, "8BitDo Zero 2"),
-    (DEVICE_TYPE_XINPUT, "Generic XInput"),
-    (DEVICE_TYPE_POWERA_WIRED, "PowerA Wired Controller"),
+    "Unknown",
+    "Switch Pro Controller",
+    "Adafruit SNES Controller",
+    "8BitDo Zero 2",
+    "Generic XInput",
+    "PowerA Wired Controller",
 )
+"""A list of all device names following the appropriate device type id. Useful for print statements.
+"""
 
 BUTTON_NAMES = (
     "A",
@@ -101,119 +115,251 @@ BUTTON_NAMES = (
     "JOYSTICK_LEFT",
     "JOYSTICK_RIGHT",
 )
+"""A list of all button names following the appropriate key number order. Useful for print
+statements.
+"""
+
+BUTTON_A = 0
+"""The ID of the "A" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
+attributes.
+"""
+
+BUTTON_B = 1
+"""The ID of the "B" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
+attributes.
+"""
+
+BUTTON_X = 2
+"""The ID of the "X" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
+attributes.
+"""
+
+BUTTON_Y = 3
+"""The ID of the "Y" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
+attributes.
+"""
+
+BUTTON_UP = 4
+"""The ID of the "D-Pad Up" button. Used by the :attr:`Button.index` and
+:attr:`keypad.Event.key_number` attributes.
+"""
+
+BUTTON_DOWN = 5
+"""The ID of the "D-Pad Down" button. Used by the :attr:`Button.index` and
+:attr:`keypad.Event.key_number` attributes.
+"""
+
+BUTTON_LEFT = 6
+"""The ID of the "D-Pad Left" button. Used by the :attr:`Button.index` and
+:attr:`keypad.Event.key_number` attributes.
+"""
+
+BUTTON_RIGHT = 7
+"""The ID of the "D-Pad Right" button. Used by the :attr:`Button.index` and
+:attr:`keypad.Event.key_number` attributes.
+"""
+
+BUTTON_START = 8
+"""The ID of the "Start" button. Used by the :attr:`Button.index` and
+:attr:`keypad.Event.key_number` attributes.
+"""
+
+BUTTON_SELECT = 9
+"""The ID of the "Select" button. Used by the :attr:`Button.index` and
+:attr:`keypad.Event.key_number` attributes.
+"""
+
+BUTTON_HOME = 10
+"""The ID of the "Home" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
+attributes.
+"""
+
+BUTTON_L1 = 11
+"""The ID of the "L1" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
+attributes.
+"""
+
+BUTTON_R1 = 12
+"""The ID of the "R1" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
+attributes.
+"""
+
+BUTTON_L2 = 13
+"""The ID of the "L2" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
+attributes.
+"""
+
+BUTTON_R2 = 14
+"""The ID of the "R2" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
+attributes.
+"""
+
+BUTTON_L3 = 15
+"""The ID of the "L3" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
+attributes.
+"""
+
+BUTTON_R3 = 16
+"""The ID of the "R3" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
+attributes.
+"""
+
+BUTTON_JOYSTICK_UP = 17
+"""The ID of the "Joystick Up" button which is triggered when the left joystick exceeds the analog
+threshold in the up direction. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
+attributes.
+"""
+
+BUTTON_JOYSTICK_DOWN = 18
+"""The ID of the "Joystick Down" button which is triggered when the left joystick exceeds the analog
+threshold in the down direction. Used by the :attr:`Button.index` and
+:attr:`keypad.Event.key_number` attributes.
+"""
+
+BUTTON_JOYSTICK_LEFT = 19
+"""The ID of the "Joystick Left" button which is triggered when the left joystick exceeds the analog
+threshold in the left direction. Used by the :attr:`Button.index` and
+:attr:`keypad.Event.key_number` attributes.
+"""
+
+BUTTON_JOYSTICK_RIGHT = 20
+"""The ID of the "Joystick Right" button which is triggered when the left joystick exceeds the
+analog threshold in the right direction. Used by the :attr:`Button.index` and
+:attr:`keypad.Event.key_number` attributes.
+"""
 
 
 class Button:
-    A = const(0)
-    B = const(1)
-    X = const(2)
-    Y = const(3)
-    UP = const(4)
-    DOWN = const(5)
-    LEFT = const(6)
-    RIGHT = const(7)
-    START = const(8)
-    SELECT = const(9)
-    HOME = const(10)
-    L1 = const(11)
-    R1 = const(12)
-    L2 = const(13)
-    R2 = const(14)
-    L3 = const(15)
-    R3 = const(16)
-    JOYSTICK_UP = const(17)
-    JOYSTICK_DOWN = const(18)
-    JOYSTICK_LEFT = const(19)
-    JOYSTICK_RIGHT = const(20)
+    def __init__(self, index: int):
+        self._mask = 1 << index
 
-    def __init__(self, value: int, pressed: bool = False):
-        assert self.A <= value <= self.JOYSTICK_RIGHT
-        self._value = value
-        self._pressed = pressed
-        self._changed = False
+    def __get__(self, obj, objtype=None):
+        return obj._pressed & self._mask
 
-    def __str__(self) -> str:
-        return " ".join((BUTTON_NAMES[self._value], "Pressed" if self._pressed else "Released"))
-
-    def __hash__(self) -> int:
-        return self.__value
-
-    def __eq__(self, other) -> bool:
-        if type(other) is int:
-            return self._value == other
+    def __set__(self, obj, value: bool):
+        if bool(obj._pressed & self._mask) != value:
+            obj._changed |= self._mask
         else:
-            return self._value == other._value
+            obj._changed &= ~self._mask
 
-    @property
-    def value(self) -> int:
-        return self._value
-
-    @property
-    def pressed(self) -> bool:
-        return self._pressed
-
-    @pressed.setter
-    def pressed(self, value: bool) -> None:
-        self._changed = self._pressed != value
-        self._pressed = value
-
-    @property
-    def released(self) -> bool:
-        return not self._pressed
-
-    @released.setter
-    def released(self, value: bool) -> None:
-        self.pressed = not value
-
-    @property
-    def changed(self) -> bool:
-        return self._changed
+        if value:
+            obj._pressed |= self._mask
+        else:
+            obj._pressed &= ~self._mask
 
 
 class Buttons:
+    """The class which handles the state of each digital button of a :class:`Gamepad` device."""
+
+    A: bool = Button(BUTTON_A)
+    """Whether or not the "A" button is pressed."""
+
+    B: bool = Button(BUTTON_B)
+    """Whether or not the "B" button is pressed."""
+
+    X: bool = Button(BUTTON_X)
+    """Whether or not the "X" button is pressed."""
+
+    Y: bool = Button(BUTTON_Y)
+    """Whether or not the "Y" button is pressed."""
+
+    UP: bool = Button(BUTTON_UP)
+    """Whether or not the "Up" button is pressed."""
+
+    DOWN: bool = Button(BUTTON_DOWN)
+    """Whether or not the "Down" button is pressed."""
+
+    LEFT: bool = Button(BUTTON_LEFT)
+    """Whether or not the "Left" button is pressed."""
+
+    RIGHT: bool = Button(BUTTON_RIGHT)
+    """Whether or not the "Right" button is pressed."""
+
+    START: bool = Button(BUTTON_START)
+    """Whether or not the "Start" button is pressed."""
+
+    SELECT: bool = Button(BUTTON_SELECT)
+    """Whether or not the "Select" button is pressed."""
+
+    HOME: bool = Button(BUTTON_HOME)
+    """Whether or not the "Home" button is pressed."""
+
+    L1: bool = Button(BUTTON_L1)
+    """Whether or not the "L1" button is pressed."""
+
+    R1: bool = Button(BUTTON_R1)
+    """Whether or not the "R1" button is pressed."""
+
+    L2: bool = Button(BUTTON_L2)
+    """Whether or not the "L2" button is pressed."""
+
+    R2: bool = Button(BUTTON_R2)
+    """Whether or not the "R2" button is pressed."""
+
+    L3: bool = Button(BUTTON_L3)
+    """Whether or not the "L3" button is pressed."""
+
+    R3: bool = Button(BUTTON_R3)
+    """Whether or not the "R3" button is pressed."""
+
+    JOYSTICK_UP: bool = Button(BUTTON_JOYSTICK_UP)
+    """Whether or not the "Joystick Up" button is pressed which occurs when the left joystick
+    exceeds the analog threshold in the up direction.
+    """
+
+    JOYSTICK_DOWN: bool = Button(BUTTON_JOYSTICK_DOWN)
+    """Whether or not the "Joystick Down" button is pressed which occurs when the left joystick
+    exceeds the analog threshold in the down direction.
+    """
+
+    JOYSTICK_LEFT: bool = Button(BUTTON_JOYSTICK_LEFT)
+    """Whether or not the "Joystick Left" button is pressed which occurs when the left joystick
+    exceeds the analog threshold in the left direction.
+    """
+
+    JOYSTICK_RIGHT: bool = Button(BUTTON_JOYSTICK_RIGHT)
+    """Whether or not the "Joystick Right" button is pressed which occurs when the left joystick
+    exceeds the analog threshold in the right direction.
+    """
+
     def __init__(self):
-        self.A = Button(Button.A)
-        self.B = Button(Button.B)
-        self.X = Button(Button.X)
-        self.Y = Button(Button.Y)
-        self.UP = Button(Button.UP)
-        self.DOWN = Button(Button.DOWN)
-        self.LEFT = Button(Button.LEFT)
-        self.RIGHT = Button(Button.RIGHT)
-        self.START = Button(Button.START)
-        self.SELECT = Button(Button.SELECT)
-        self.HOME = Button(Button.HOME)
-        self.L1 = Button(Button.L1)
-        self.R1 = Button(Button.R1)
-        self.L2 = Button(Button.L2)
-        self.R2 = Button(Button.R2)
-        self.L3 = Button(Button.L3)
-        self.R3 = Button(Button.R3)
-        self.JOYSTICK_UP = Button(Button.JOYSTICK_UP)
-        self.JOYSTICK_DOWN = Button(Button.JOYSTICK_DOWN)
-        self.JOYSTICK_LEFT = Button(Button.JOYSTICK_LEFT)
-        self.JOYSTICK_RIGHT = Button(Button.JOYSTICK_RIGHT)
+        """Initializes the state of all digital button inputs."""
+        self.reset()
 
     def __iter__(self):
         for x in BUTTON_NAMES:
             yield getattr(self, x)
 
-    def __getitem__(self, index: int) -> Button:
+    def __getitem__(self, index: int) -> bool:
         return getattr(self, BUTTON_NAMES[index])
 
     def __len__(self) -> int:
         return len(BUTTON_NAMES)
 
-    def get_changed(self) -> tuple:
-        return tuple([x for x in self if x.changed])
+    @property
+    def events(self) -> tuple:
+        """A list of all changed button states since the last :class:`Gamepad` device update
+        represented as :class:`keypad.Event` objects. The :attr:`keypad.Event.key_number` value
+        represents the button ID.
+        """
+        return tuple([keypad.Event(i, x) for i, x in enumerate(self) if self._changed & (1 << i)])
 
-    def is_changed(self) -> bool:
+    @property
+    def changed(self) -> bool:
+        """Whether or not the state of any buttons has changed since the last :class:`Gamepad`
+        device update.
+        """
         try:
-            next(x for x in self if x.changed)
+            next(x for i, x in enumerate(self) if self._changed & (1 << i))
         except StopIteration:
             return False
         finally:
             return True
+
+    def reset(self) -> None:
+        """Reset the state of all buttons to be released."""
+        self._pressed = 0
+        self._changed = 0
 
 
 class State:
@@ -234,7 +380,7 @@ class State:
         if type(value) is float:
             value = int(value * 255)
         self._left_trigger = min(max(value, 0), 255)
-        self._buttons.L2.pressed = self._left_trigger >= _TRIGGER_THRESHOLD
+        self._buttons.L2 = self._left_trigger >= _TRIGGER_THRESHOLD
 
     @property
     def right_trigger(self) -> float:
@@ -245,14 +391,14 @@ class State:
         if type(value) is float:
             value = int(value * 255)
         self._right_trigger = min(max(value, 0), 255)
-        self._buttons.R2.pressed = self._right_trigger >= _TRIGGER_THRESHOLD
+        self._buttons.R2 = self._right_trigger >= _TRIGGER_THRESHOLD
 
     @property
-    def left_joystick(self) -> tuple:
+    def left_joystick(self) -> tuple[int]:
         return (self._left_joystick_x / 32768, self._left_joystick_y / 32768)
 
     @left_joystick.setter
-    def left_joystick(self, value: tuple) -> None:
+    def left_joystick(self, value: tuple[int]) -> None:
         if len(value) != 2:
             raise ValueError("value must be in the format of (x, y)")
 
@@ -264,10 +410,10 @@ class State:
         self._left_joystick_x = min(max(x, -32768), 32767)
         self._left_joystick_y = min(max(y, -32768), 32767)
 
-        self._buttons.JOYSTICK_RIGHT.pressed = self._left_joystick_x >= _JOYSTICK_THRESHOLD
-        self._buttons.JOYSTICK_LEFT.pressed = self._left_joystick_x <= -_JOYSTICK_THRESHOLD
-        self._buttons.JOYSTICK_UP.pressed = self._left_joystick_y >= _JOYSTICK_THRESHOLD
-        self._buttons.JOYSTICK_DOWN.pressed = self._left_joystick_y <= -_JOYSTICK_THRESHOLD
+        self._buttons.JOYSTICK_RIGHT = self._left_joystick_x >= _JOYSTICK_THRESHOLD
+        self._buttons.JOYSTICK_LEFT = self._left_joystick_x <= -_JOYSTICK_THRESHOLD
+        self._buttons.JOYSTICK_UP = self._left_joystick_y >= _JOYSTICK_THRESHOLD
+        self._buttons.JOYSTICK_DOWN = self._left_joystick_y <= -_JOYSTICK_THRESHOLD
 
     @property
     def right_joystick(self) -> tuple:
@@ -288,8 +434,7 @@ class State:
         self._right_joystick_y = min(max(y, -32768), 32767)
 
     def reset(self) -> None:
-        for button in self._buttons:
-            button.pressed = False
+        self._buttons.reset()
         self._left_trigger = 0
         self._right_trigger = 0
         self._left_joystick_x = 0
@@ -298,14 +443,14 @@ class State:
         self._right_joystick_y = 0
 
 
-def get_device_type(
+def _get_device_type(
     device: usb.core.Device, device_descriptor: DeviceDescriptor = None, debug: bool = False
 ) -> int:
     # identify device by id
     device_id = (device.idVendor, device.idProduct)
     if debug:
         print("identifying device by id (vid+pid):", [hex(x) for x in device_id])
-    for device_type, type_vid, type_pid in DEVICE_TYPES:
+    for device_type, type_vid, type_pid in _DEVICE_TYPES:
         if device_id == (type_vid, type_pid):
             if debug:
                 print("found device type:", device_type)
@@ -317,7 +462,13 @@ def get_device_type(
     class_identifier = device_descriptor.get_class_identifier()
     if debug:
         print("identifying device by class identifier:", [hex(x) for x in class_identifier])
-    for device_type, type_class, type_subclass, type_int_class, type_int_subclass in DEVICE_CLASSES:
+    for (
+        device_type,
+        type_class,
+        type_subclass,
+        type_int_class,
+        type_int_subclass,
+    ) in _DEVICE_CLASSES:
         if class_identifier == (type_class, type_subclass, type_int_class, type_int_subclass):
             if debug:
                 print("found device type:", device_type)
@@ -440,13 +591,12 @@ class Device:
             try:
                 self.read()
                 return True
-            except usb.core.USBTimeoutError:
+            except (usb.core.USBTimeoutError, usb.core.USBError):
                 pass
         return False
 
-    def read(self) -> tuple:
-        count = self._device.read(self._in_endpoint.address, self._report, timeout=self._interval)
-        return count
+    def read(self) -> int:
+        return self._device.read(self._in_endpoint.address, self._report, timeout=self._interval)
 
     def flush(self) -> None:
         for i in range(8):
@@ -498,18 +648,18 @@ class SwitchProDevice(Device):
         self.write(msg)
 
     def _update_state(self, state: State) -> None:
-        state.buttons.Y.pressed = bool(self._report[2] & 0x01)
-        state.buttons.X.pressed = bool(self._report[2] & 0x02)
-        state.buttons.B.pressed = bool(self._report[2] & 0x04)
-        state.buttons.A.pressed = bool(self._report[2] & 0x08)
-        state.buttons.R1.pressed = bool(self._report[2] & 0x40)
-        state.buttons.SELECT.pressed = bool(self._report[3] & 0x01)
-        state.buttons.START.pressed = bool(self._report[3] & 0x02)
-        state.buttons.DOWN.pressed = bool(self._report[4] & 0x01)
-        state.buttons.UP.pressed = bool(self._report[4] & 0x02)
-        state.buttons.RIGHT.pressed = bool(self._report[4] & 0x04)
-        state.buttons.LEFT.pressed = bool(self._report[4] & 0x08)
-        state.buttons.L1.pressed = bool(self._report[4] & 0x40)
+        state.buttons.Y = bool(self._report[2] & 0x01)
+        state.buttons.X = bool(self._report[2] & 0x02)
+        state.buttons.B = bool(self._report[2] & 0x04)
+        state.buttons.A = bool(self._report[2] & 0x08)
+        state.buttons.R1 = bool(self._report[2] & 0x40)
+        state.buttons.SELECT = bool(self._report[3] & 0x01)
+        state.buttons.START = bool(self._report[3] & 0x02)
+        state.buttons.DOWN = bool(self._report[4] & 0x01)
+        state.buttons.UP = bool(self._report[4] & 0x02)
+        state.buttons.RIGHT = bool(self._report[4] & 0x04)
+        state.buttons.LEFT = bool(self._report[4] & 0x08)
+        state.buttons.L1 = bool(self._report[4] & 0x40)
 
 
 class XInputDevice(Device):
@@ -540,19 +690,19 @@ class XInputDevice(Device):
         self.write(msg)
 
     def _update_state(self, state: State) -> None:
-        state.buttons.UP.pressed = bool(self._report[2] & 0x01)
-        state.buttons.DOWN.pressed = bool(self._report[2] & 0x02)
-        state.buttons.LEFT.pressed = bool(self._report[2] & 0x04)
-        state.buttons.RIGHT.pressed = bool(self._report[2] & 0x08)
-        state.buttons.START.pressed = bool(self._report[2] & 0x10)
-        state.buttons.SELECT.pressed = bool(self._report[2] & 0x20)
-        state.buttons.L1.pressed = bool(self._report[3] & 0x01)
-        state.buttons.R1.pressed = bool(self._report[3] & 0x02)
-        state.buttons.HOME.pressed = bool(self._report[3] & 0x04)
-        state.buttons.B.pressed = bool(self._report[3] & 0x10)
-        state.buttons.A.pressed = bool(self._report[3] & 0x20)
-        state.buttons.Y.pressed = bool(self._report[3] & 0x40)
-        state.buttons.X.pressed = bool(self._report[3] & 0x80)
+        state.buttons.UP = bool(self._report[2] & 0x01)
+        state.buttons.DOWN = bool(self._report[2] & 0x02)
+        state.buttons.LEFT = bool(self._report[2] & 0x04)
+        state.buttons.RIGHT = bool(self._report[2] & 0x08)
+        state.buttons.START = bool(self._report[2] & 0x10)
+        state.buttons.SELECT = bool(self._report[2] & 0x20)
+        state.buttons.L1 = bool(self._report[3] & 0x01)
+        state.buttons.R1 = bool(self._report[3] & 0x02)
+        state.buttons.HOME = bool(self._report[3] & 0x04)
+        state.buttons.B = bool(self._report[3] & 0x10)
+        state.buttons.A = bool(self._report[3] & 0x20)
+        state.buttons.Y = bool(self._report[3] & 0x40)
+        state.buttons.X = bool(self._report[3] & 0x80)
 
         state.left_trigger = self._report[4]
         state.right_trigger = self._report[5]
@@ -579,19 +729,19 @@ class AdafruitSnesDevice(Device):
         )
 
     def _update_state(self, state: State) -> None:
-        state.buttons.LEFT.pressed = self._report[0] == 0x00
-        state.buttons.RIGHT.pressed = self._report[0] == 0xFF
-        state.buttons.UP.pressed = self._report[1] == 0x00
-        state.buttons.DOWN.pressed = self._report[1] == 0xFF
+        state.buttons.LEFT = self._report[0] == 0x00
+        state.buttons.RIGHT = self._report[0] == 0xFF
+        state.buttons.UP = self._report[1] == 0x00
+        state.buttons.DOWN = self._report[1] == 0xFF
 
-        state.buttons.X.pressed = bool(self._report[5] & 0x10)
-        state.buttons.A.pressed = bool(self._report[5] & 0x20)
-        state.buttons.B.pressed = bool(self._report[5] & 0x40)
-        state.buttons.Y.pressed = bool(self._report[5] & 0x80)
-        state.buttons.L1.pressed = bool(self._report[6] & 0x01)
-        state.buttons.R1.pressed = bool(self._report[6] & 0x02)
-        state.buttons.SELECT.pressed = bool(self._report[6] & 0x10)
-        state.buttons.START.pressed = bool(self._report[6] & 0x20)
+        state.buttons.X = bool(self._report[5] & 0x10)
+        state.buttons.A = bool(self._report[5] & 0x20)
+        state.buttons.B = bool(self._report[5] & 0x40)
+        state.buttons.Y = bool(self._report[5] & 0x80)
+        state.buttons.L1 = bool(self._report[6] & 0x01)
+        state.buttons.R1 = bool(self._report[6] & 0x02)
+        state.buttons.SELECT = bool(self._report[6] & 0x10)
+        state.buttons.START = bool(self._report[6] & 0x20)
 
 
 class Zero2Device(Device):  # 8BitDo
@@ -606,14 +756,14 @@ class Zero2Device(Device):  # 8BitDo
         )
 
     def _update_state(self, state: State) -> None:
-        state.buttons.A.pressed = bool(self._report[0] & 0x01)
-        state.buttons.B.pressed = bool(self._report[0] & 0x02)
-        state.buttons.X.pressed = bool(self._report[0] & 0x08)
-        state.buttons.Y.pressed = bool(self._report[0] & 0x10)
-        state.buttons.L1.pressed = bool(self._report[0] & 0x40)
-        state.buttons.R1.pressed = bool(self._report[0] & 0x80)
-        state.buttons.SELECT.pressed = bool(self._report[1] & 0x04)
-        state.buttons.START.pressed = bool(self._report[1] & 0x08)
+        state.buttons.A = bool(self._report[0] & 0x01)
+        state.buttons.B = bool(self._report[0] & 0x02)
+        state.buttons.X = bool(self._report[0] & 0x08)
+        state.buttons.Y = bool(self._report[0] & 0x10)
+        state.buttons.L1 = bool(self._report[0] & 0x40)
+        state.buttons.R1 = bool(self._report[0] & 0x80)
+        state.buttons.SELECT = bool(self._report[1] & 0x04)
+        state.buttons.START = bool(self._report[1] & 0x08)
 
         # 4-bit BCD
         state.buttons.UP = self._report[2] in {0x07, 0x00, 0x01}
@@ -676,9 +826,6 @@ _failed_devices = []
 
 
 def _find_device(port: int = None, debug: bool = False) -> Device:  # noqa: PLR0912
-    if port is not None and (port < 1 or port > 2):
-        raise ValueError("Only ports 1-2 supported")
-
     for device in usb.core.find(find_all=True):
         device_id = (device.idVendor, device.idProduct)
         if (port,) + device_id in _connected_devices or device_id in _failed_devices:
@@ -686,12 +833,11 @@ def _find_device(port: int = None, debug: bool = False) -> Device:  # noqa: PLR0
 
         if port is not None:
             port_numbers = device.port_numbers
-            if port == 1 and port_numbers is not None and port_numbers != (1,):
-                # Board has USB hub, but device is not plugged into port 1
+            if port != 1 and port_numbers is None:
+                # Board does not have USB hub, but a port greater than 1 is requested
                 continue
-            if port == 2 and (port_numbers is None or port_numbers != (2,)):
-                # Board doesn't have a USB hub,or it has a hub but the device is not plugged into
-                # port 2
+            if port_numbers is not None and port_numbers != (port,):
+                # Board has USB hub, but device is not plugged into the specified port
                 continue
 
         if debug:
@@ -709,7 +855,9 @@ def _find_device(port: int = None, debug: bool = False) -> Device:  # noqa: PLR0
 
         device_descriptor = DeviceDescriptor(device)
         if (
-            device_type := get_device_type(device, device_descriptor=device_descriptor, debug=debug)
+            device_type := _get_device_type(
+                device, device_descriptor=device_descriptor, debug=debug
+            )
         ) == DEVICE_TYPE_UNKNOWN:
             if debug:
                 print("device not recognized")
@@ -717,7 +865,8 @@ def _find_device(port: int = None, debug: bool = False) -> Device:  # noqa: PLR0
             continue
         elif debug:
             print(
-                "device identified:", next((name for x, name in DEVICE_NAMES if x == device_type))
+                "device identified:",
+                next((name for i, name in enumerate(DEVICE_NAMES) if i == device_type)),
             )
 
         try:
@@ -736,10 +885,19 @@ def _find_device(port: int = None, debug: bool = False) -> Device:  # noqa: PLR0
 
 
 class Gamepad:
-    def __init__(self, port: int = None, debug: bool = False) -> None:
-        if port is not None and (port < 1 or port > 2):
-            raise ValueError("Only ports 1-2 supported")
+    """Helper class which coordinates device identification, initialization and reading for
+    supported USB gamepad devices.
+    """
 
+    def __init__(self, port: int = None, debug: bool = False) -> None:
+        """Initializes the :class:`Gamepad` device helper.
+
+        :param port: If using a USB hub such as the CH334F, you can specify the desired physical
+            port to communicate with. This is useful for reading from multiple gamepad devices with
+            a specific device location for each. Use `None` to allow this class to communicate with
+            devices on any USB port.
+        :param debug: Set this value to `True` to generate verbose debug messages over REPL.
+        """
         self._port = port
         self._debug = debug
 
@@ -751,6 +909,13 @@ class Gamepad:
         self._timestamp = time.monotonic() - _SEARCH_DELAY
 
     def update(self) -> bool:
+        """Update the gamepad device. If no device is current active, it will attempt to identify
+        and connect with a USB device at most once every second. If a device is active, it will poll
+        it and update the gamepad state. If the device is deemed that it is no longer responsive, it
+        will be automatically disconnected.
+
+        :return: Whether or not the state of the gamepad was updated.
+        """
         if self._device is None and time.monotonic() - self._timestamp >= _SEARCH_DELAY:
             self._device = _find_device(self._port, debug=self._debug)
             if self._device is not None:
@@ -775,45 +940,64 @@ class Gamepad:
 
     @property
     def events(self) -> tuple:
-        events = []
+        """Updates the gamepad device and returns a tuple of button events as :class:`keypad.Event`
+        objects.
+        """
         if self.update():
-            for button in self._state.buttons.get_changed():
-                events.append(keypad.Event(button.value, button.pressed))
-        return tuple(events)
+            return self._state.buttons.events
+        return tuple()
 
     @property
     def port(self) -> int:
+        """The designated port number when the gamepad was initialized."""
         return self._port
 
     @property
     def connected(self) -> bool:
+        """Whether or not a usb gamepad device is connected."""
         return self._device is not None
 
     @property
     def device_type(self) -> int:
-        return DEVICE_TYPE_UNKNOWN
+        """The id of the device type if a usb gamepad device is connected. Otherwise, it
+        will be :const:`DEVICE_TYPE_UNKNOWN`.
+        """
+        return self._device.device_id if self._device is not None else DEVICE_TYPE_UNKNOWN
 
     @property
     def buttons(self) -> Buttons:
+        """The object which handles the state of all digital button inputs."""
         return self._state.buttons
 
     @property
     def left_trigger(self) -> float:
+        """The value of the analog left trigger from 0.0 to 1.0."""
         return self._state.left_trigger
 
     @property
     def right_trigger(self) -> float:
+        """The value of the analog right trigger from 0.0 to 1.0."""
         return self._state.right_trigger
 
     @property
     def left_joystick(self) -> tuple:
+        """The position of the left analog joystick on each axis from -1.0 to 1.0 represented as a
+        tuple with the format (x, y).
+        """
         return self._state.left_joystick
 
     @property
     def right_joystick(self) -> tuple:
+        """The position of the right analog joystick on each axis from -1.0 to 1.0 represented as a
+        tuple with the format (x, y).
+        """
         return self._state.right_joystick
 
     def disconnect(self) -> bool:
+        """Disconnect from the usb gamepad device if one is currently active.
+
+        :return: If there is no active device, it will return `False`. Otherwise, `True`.
+        """
         if self._device is None:
             return False
         if self._debug:

@@ -43,30 +43,30 @@ class Gamepad(displayio.Group):
         button_size = int(size * 0.05)
 
         self._buttons = (
-            (relic_usb_host_gamepad.Button.A, 0.85, 0.4),
-            (relic_usb_host_gamepad.Button.B, 0.8, 0.5),
-            (relic_usb_host_gamepad.Button.X, 0.8, 0.3),
-            (relic_usb_host_gamepad.Button.Y, 0.75, 0.4),
-            (relic_usb_host_gamepad.Button.LEFT, 0.15, 0.4),
-            (relic_usb_host_gamepad.Button.RIGHT, 0.25, 0.4),
-            (relic_usb_host_gamepad.Button.UP, 0.2, 0.3),
-            (relic_usb_host_gamepad.Button.DOWN, 0.2, 0.5),
-            (relic_usb_host_gamepad.Button.START, 0.6, 0.4),
-            (relic_usb_host_gamepad.Button.SELECT, 0.4, 0.4),
-            (relic_usb_host_gamepad.Button.HOME, 0.5, 0.4),
-            (relic_usb_host_gamepad.Button.L1, 0.1, 0.1),
-            (relic_usb_host_gamepad.Button.L2, 0.2, 0.1),
-            (relic_usb_host_gamepad.Button.L3, 0.3, 0.1),
-            (relic_usb_host_gamepad.Button.R1, 0.9, 0.1),
-            (relic_usb_host_gamepad.Button.R2, 0.8, 0.1),
-            (relic_usb_host_gamepad.Button.R3, 0.7, 0.1),
-            (relic_usb_host_gamepad.Button.JOYSTICK_LEFT, 0.25, 0.75),
-            (relic_usb_host_gamepad.Button.JOYSTICK_RIGHT, 0.45, 0.75),
-            (relic_usb_host_gamepad.Button.JOYSTICK_UP, 0.35, 0.6),
-            (relic_usb_host_gamepad.Button.JOYSTICK_DOWN, 0.35, 0.9),
+            (0.85, 0.4),  # A
+            (0.8, 0.5),  # B
+            (0.8, 0.3),  # X
+            (0.75, 0.4),  # Y
+            (0.2, 0.3),  # UP
+            (0.2, 0.5),  # DOWN
+            (0.15, 0.4),  # LEFT
+            (0.25, 0.4),  # RIGHT
+            (0.6, 0.4),  # START
+            (0.4, 0.4),  # SELECT
+            (0.5, 0.4),  # HOME
+            (0.1, 0.1),  # L1
+            (0.9, 0.1),  # R1
+            (0.2, 0.1),  # L2
+            (0.8, 0.1),  # R2
+            (0.3, 0.1),  # L3
+            (0.7, 0.1),  # R3
+            (0.35, 0.6),  # JOYSTICK_UP
+            (0.35, 0.9),  # JOYSTICK_DOWN
+            (0.25, 0.75),  # JOYSTICK_LEFT
+            (0.45, 0.75),  # JOYSTICK_RIGHT
         )
         self._circles = []
-        for button, x, y in self._buttons:
+        for x, y in self._buttons:
             circle = vectorio.Circle(
                 pixel_shader=self._released_palette,
                 radius=button_size // 2,
@@ -117,11 +117,10 @@ class Gamepad(displayio.Group):
 
     def update(self) -> bool:
         if self._gamepad.update():
-            for i, data in enumerate(self._buttons):
-                button = self._gamepad.buttons[data[0]]
-                if button.changed:
-                    self._circles[i].pixel_shader = (
-                        self._pressed_palette if button.pressed else self._released_palette
+            if self._gamepad.buttons.changed:
+                for event in self._gamepad.buttons.events:
+                    self._circles[event.key_number].pixel_shader = (
+                        self._pressed_palette if event.pressed else self._released_palette
                     )
             for i, data in enumerate(self._joysticks):
                 name, x, y = data
@@ -132,7 +131,7 @@ class Gamepad(displayio.Group):
                 self._joystick_circles[i].y = int(
                     (-js_y * self._joystick_outer_size // 2) + (y * self.height)
                 )
-            return self._gamepad.buttons.is_changed()
+            return True
         return False
 
 

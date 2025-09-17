@@ -27,12 +27,18 @@ gamepads = [relic_usb_host_gamepad.Gamepad(i + 1, debug=DEBUG) for i in range(2)
 while True:
     changed = False
     for i, gamepad in enumerate(gamepads):
-        if gamepad.update() and gamepad.buttons.is_changed():
+        if gamepad.update() and gamepad.buttons.changed:
             changed = True
-            for j, button in enumerate((gamepad.buttons.A, gamepad.buttons.B)):
-                neopixels[i * len(gamepads) + j] = 0xFFFFFF if button.pressed else 0x000000
-            for button in gamepad.buttons.get_changed():
-                print(button)
+            for j, pressed in enumerate((gamepad.buttons.A, gamepad.buttons.B)):
+                neopixels[i * len(gamepads) + j] = 0xFFFFFF if pressed else 0x000000
+            for event in gamepad.buttons.events:
+                print(
+                    "Gamepad {:d}: {:s} {:s}".format(
+                        i + 1,
+                        relic_usb_host_gamepad.BUTTON_NAMES[event.key_number],
+                        ("Pressed" if event.pressed else "Released"),
+                    )
+                )
     if changed:
         neopixels.show()
     time.sleep(1 / 60)

@@ -21,7 +21,14 @@ extensions = [
     "sphinx.ext.todo",
 ]
 
-autodoc_mock_imports = ["keypad", "micropython", "struct", "time", "usb"]
+autodoc_mock_imports = [
+    "keypad",
+    "micropython",
+    "struct",
+    "time",
+    "usb",
+    "relic_usb_host_descriptor_parser",
+]
 
 autodoc_preserve_defaults = True
 

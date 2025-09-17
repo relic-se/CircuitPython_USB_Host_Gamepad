@@ -7,10 +7,12 @@ Ensure your device works with this simple test.
     :caption: examples/usb_host_gamepad_simpletest.py
     :linenos:
 
-.. literalinclude:: ../examples/usb_host_gamepad_displayio.py
-    :caption: examples/usb_host_gamepad_simpletest.py
-    :linenos:
+Displayio
+---------
 
-.. literalinclude:: ../examples/usb_host_gamepad_descriptor.py
+Display the status of usb gamepads on ports 1 and 2 of an Adafruit Fruit Jam device using the HDMI
+video output.
+
+.. literalinclude:: ../examples/usb_host_gamepad_displayio.py
     :caption: examples/usb_host_gamepad_simpletest.py
     :linenos:
