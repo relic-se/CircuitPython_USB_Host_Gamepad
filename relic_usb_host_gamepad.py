@@ -66,7 +66,7 @@ DEVICE_TYPE_XINPUT = const(4)  # (vid:pid vary) Clones of Xbox360 controller
 """
 
 DEVICE_TYPE_POWERA_WIRED = const(5)  # 20d6:a711 PowerA Wired Controller (for Switch)
-"""The type of a usb gamepad device which has been identified as an Adafruit SNES controller."""
+"""The type of a usb gamepad device which has been identified as a PowerA Wired Controller."""
 
 _DEVICE_TYPES = (
     # (index, vid, pid),
@@ -120,112 +120,112 @@ statements.
 """
 
 BUTTON_A = 0
-"""The ID of the "A" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
-attributes.
+"""The ID of the "A" button. Used as the :attr:`keypad.Event.key_number` attribute in
+:attr:`Gamepad.events`.
 """
 
 BUTTON_B = 1
-"""The ID of the "B" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
-attributes.
+"""The ID of the "B" button. Used as the :attr:`keypad.Event.key_number` attribute in
+:attr:`Gamepad.events`.
 """
 
 BUTTON_X = 2
-"""The ID of the "X" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
-attributes.
+"""The ID of the "X" button. Used as the :attr:`keypad.Event.key_number` attribute in
+:attr:`Gamepad.events`.
 """
 
 BUTTON_Y = 3
-"""The ID of the "Y" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
-attributes.
+"""The ID of the "Y" button. Used as the :attr:`keypad.Event.key_number` attribute in
+:attr:`Gamepad.events`.
 """
 
 BUTTON_UP = 4
-"""The ID of the "D-Pad Up" button. Used by the :attr:`Button.index` and
-:attr:`keypad.Event.key_number` attributes.
+"""The ID of the "D-Pad Up" button. Used as the :attr:`keypad.Event.key_number` attribute in
+:attr:`Gamepad.events`.
 """
 
 BUTTON_DOWN = 5
-"""The ID of the "D-Pad Down" button. Used by the :attr:`Button.index` and
-:attr:`keypad.Event.key_number` attributes.
+"""The ID of the "D-Pad Down" button. Used as the :attr:`keypad.Event.key_number` attribute in
+:attr:`Gamepad.events`.
 """
 
 BUTTON_LEFT = 6
-"""The ID of the "D-Pad Left" button. Used by the :attr:`Button.index` and
-:attr:`keypad.Event.key_number` attributes.
+"""The ID of the "D-Pad Left" button. Used as the :attr:`keypad.Event.key_number` attribute in
+:attr:`Gamepad.events`.
 """
 
 BUTTON_RIGHT = 7
-"""The ID of the "D-Pad Right" button. Used by the :attr:`Button.index` and
-:attr:`keypad.Event.key_number` attributes.
+"""The ID of the "D-Pad Right" button. Used as the :attr:`keypad.Event.key_number` attribute in
+:attr:`Gamepad.events`.
 """
 
 BUTTON_START = 8
-"""The ID of the "Start" button. Used by the :attr:`Button.index` and
-:attr:`keypad.Event.key_number` attributes.
+"""The ID of the "Start" button. Used as the :attr:`keypad.Event.key_number` attribute in
+:attr:`Gamepad.events`.
 """
 
 BUTTON_SELECT = 9
-"""The ID of the "Select" button. Used by the :attr:`Button.index` and
-:attr:`keypad.Event.key_number` attributes.
+"""The ID of the "Select" button. Used as the :attr:`keypad.Event.key_number` attribute in
+:attr:`Gamepad.events`.
 """
 
 BUTTON_HOME = 10
-"""The ID of the "Home" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
-attributes.
+"""The ID of the "Home" button. Used as the :attr:`keypad.Event.key_number` attribute in
+:attr:`Gamepad.events`.
 """
 
 BUTTON_L1 = 11
-"""The ID of the "L1" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
-attributes.
+"""The ID of the "L1" button. Used as the :attr:`keypad.Event.key_number` attribute in
+:attr:`Gamepad.events`.
 """
 
 BUTTON_R1 = 12
-"""The ID of the "R1" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
-attributes.
+"""The ID of the "R1" button. Used as the :attr:`keypad.Event.key_number` attribute in
+:attr:`Gamepad.events`.
 """
 
 BUTTON_L2 = 13
-"""The ID of the "L2" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
-attributes.
+"""The ID of the "L2" button. Used as the :attr:`keypad.Event.key_number` attribute in
+:attr:`Gamepad.events`.
 """
 
 BUTTON_R2 = 14
-"""The ID of the "R2" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
-attributes.
+"""The ID of the "R2" button. Used as the :attr:`keypad.Event.key_number` attribute in
+:attr:`Gamepad.events`.
 """
 
 BUTTON_L3 = 15
-"""The ID of the "L3" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
-attributes.
+"""The ID of the "L3" button. Used as the :attr:`keypad.Event.key_number` attribute in
+:attr:`Gamepad.events`.
 """
 
 BUTTON_R3 = 16
-"""The ID of the "R3" button. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
-attributes.
+"""The ID of the "R3" button. Used as the :attr:`keypad.Event.key_number` attribute in
+:attr:`Gamepad.events`.
 """
 
 BUTTON_JOYSTICK_UP = 17
 """The ID of the "Joystick Up" button which is triggered when the left joystick exceeds the analog
-threshold in the up direction. Used by the :attr:`Button.index` and :attr:`keypad.Event.key_number`
-attributes.
+threshold in the up direction. Used as the :attr:`keypad.Event.key_number` attribute in
+:attr:`Gamepad.events`.
 """
 
 BUTTON_JOYSTICK_DOWN = 18
 """The ID of the "Joystick Down" button which is triggered when the left joystick exceeds the analog
-threshold in the down direction. Used by the :attr:`Button.index` and
-:attr:`keypad.Event.key_number` attributes.
+threshold in the down direction. Used as the :attr:`keypad.Event.key_number` attribute in
+:attr:`Gamepad.events`.
 """
 
 BUTTON_JOYSTICK_LEFT = 19
 """The ID of the "Joystick Left" button which is triggered when the left joystick exceeds the analog
-threshold in the left direction. Used by the :attr:`Button.index` and
-:attr:`keypad.Event.key_number` attributes.
+threshold in the left direction. Used as the :attr:`keypad.Event.key_number` attribute in
+:attr:`Gamepad.events`.
 """
 
 BUTTON_JOYSTICK_RIGHT = 20
 """The ID of the "Joystick Right" button which is triggered when the left joystick exceeds the
-analog threshold in the right direction. Used by the :attr:`Button.index` and
-:attr:`keypad.Event.key_number` attributes.
+analog threshold in the right direction. Used as the :attr:`keypad.Event.key_number` attribute in
+:attr:`Gamepad.events`.
 """
 
 
@@ -940,12 +940,11 @@ class Gamepad:
 
     @property
     def events(self) -> tuple:
-        """Updates the gamepad device and returns a tuple of button events as :class:`keypad.Event`
-        objects.
+        """A tuple of all changed button states since the last successful update as
+        :class:`keypad.Event` objects. The :attr:`keypad.Event.key_number` value represents the
+        button ID.
         """
-        if self.update():
-            return self._state.buttons.events
-        return tuple()
+        return self._state.buttons.events
 
     @property
     def port(self) -> int:

@@ -104,8 +104,9 @@ Usage Example
     import relic_usb_host_gamepad
     gamepad = relic_usb_host_gamepad.Gamepad()
     while True:
-        for event in gamepad.events:
-            print(event)
+        if gamepad.update():
+            for event in gamepad.events:
+                print(event)
 
 Documentation
 =============
