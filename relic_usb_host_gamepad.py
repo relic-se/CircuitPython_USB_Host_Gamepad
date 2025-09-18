@@ -842,7 +842,7 @@ def _find_device(port: int = None, debug: bool = False) -> Device:  # noqa: PLR0
 
         if debug:
             print(
-                f"device found on port #{port:d}",
+                "gamepad device found" + (f" on port #{port:d}" if port is not None else ""),
                 {
                     "pid": hex(device.idProduct),
                     "vid": hex(device.idVendor),
