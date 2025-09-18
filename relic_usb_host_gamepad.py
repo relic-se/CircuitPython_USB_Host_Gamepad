@@ -940,12 +940,11 @@ class Gamepad:
 
     @property
     def events(self) -> tuple:
-        """Updates the gamepad device and returns a tuple of button events as :class:`keypad.Event`
-        objects.
+        """A tuple of all changed button states since the last successful update as
+        :class:`keypad.Event` objects. The :attr:`keypad.Event.key_number` value represents the
+        button ID.
         """
-        if self.update():
-            return self._state.buttons.events
-        return tuple()
+        return self._state.buttons.events
 
     @property
     def port(self) -> int:

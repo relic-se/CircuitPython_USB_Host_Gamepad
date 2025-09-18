@@ -117,11 +117,10 @@ class Gamepad(displayio.Group):
 
     def update(self) -> bool:
         if self._gamepad.update():
-            if self._gamepad.buttons.changed:
-                for event in self._gamepad.buttons.events:
-                    self._circles[event.key_number].pixel_shader = (
-                        self._pressed_palette if event.pressed else self._released_palette
-                    )
+            for event in self._gamepad.events:
+                self._circles[event.key_number].pixel_shader = (
+                    self._pressed_palette if event.pressed else self._released_palette
+                )
             for i, data in enumerate(self._joysticks):
                 name, x, y = data
                 js_x, js_y = getattr(self._gamepad, name)
