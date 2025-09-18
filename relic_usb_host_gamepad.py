@@ -68,12 +68,18 @@ DEVICE_TYPE_XINPUT = const(4)  # (vid:pid vary) Clones of Xbox360 controller
 DEVICE_TYPE_POWERA_WIRED = const(5)  # 20d6:a711 PowerA Wired Controller (for Switch)
 """The type of a usb gamepad device which has been identified as a PowerA Wired Controller."""
 
+DEVICE_TYPE_PLAYSTATION_DS4 = const(6)  # Sony PlayStation DUALSHOCK 4 Controller (wired)
+"""The type of a usb gamepad device which has been identified as a wired Sony PlayStation DUALSHOCK
+4 controller.
+"""
+
 _DEVICE_TYPES = (
     # (index, vid, pid),
     (DEVICE_TYPE_SWITCH_PRO, 0x057E, 0x2009),
     (DEVICE_TYPE_ADAFRUIT_SNES, 0x081F, 0xE401),
     (DEVICE_TYPE_8BITDO_ZERO2, 0x2DC8, 0x9018),
     (DEVICE_TYPE_POWERA_WIRED, 0x20D6, 0xA711),
+    (DEVICE_TYPE_PLAYSTATION_DS4, 0x054C, 0x09CC),
 )
 
 _DEVICE_CLASSES = (
@@ -88,6 +94,7 @@ DEVICE_NAMES = (
     "8BitDo Zero 2",
     "Generic XInput",
     "PowerA Wired Controller",
+    "PlayStation DUALSHOCK 4 Controller",
 )
 """A list of all device names following the appropriate device type id. Useful for print statements.
 """
@@ -114,6 +121,7 @@ BUTTON_NAMES = (
     "JOYSTICK_DOWN",
     "JOYSTICK_LEFT",
     "JOYSTICK_RIGHT",
+    "TOUCH_PAD",
 )
 """A list of all button names following the appropriate key number order. Useful for print
 statements.
@@ -228,6 +236,12 @@ analog threshold in the right direction. Used as the :attr:`keypad.Event.key_num
 :attr:`Gamepad.events`.
 """
 
+BUTTON_TOUCH_PAD = 21
+"""The ID of the "Touch Pad" button. At the moement, this button is only supported by PlayStation
+DUALSHOCK 4 controllers. Used as the :attr:`keypad.Event.key_number` attribute in
+:attr:`Gamepad.events`.
+"""
+
 
 class Button:
     def __init__(self, index: int):
@@ -320,6 +334,11 @@ class Buttons:
     JOYSTICK_RIGHT: bool = Button(BUTTON_JOYSTICK_RIGHT)
     """Whether or not the "Joystick Right" button is pressed which occurs when the left joystick
     exceeds the analog threshold in the right direction.
+    """
+
+    TOUCH_PAD: bool = Button(BUTTON_TOUCH_PAD)
+    """Whether or not the "Touch Pad" is pressed. Only supported by PlayStation DUALSHOCK 4
+    controllers.
     """
 
     def __init__(self):
@@ -499,9 +518,6 @@ class Device:
         interface: int = 0,
         debug: bool = False,
     ):
-        if interface != 0:
-            raise ValueError("Only interface 0 is supported")
-
         self._device = device
         self._device_type = device_type
         self._led = 0
@@ -784,7 +800,6 @@ class PowerAWiredDevice(Device):
         )
 
     def _update_state(self, state: State) -> None:
-        # Buttons are bitfield
         state.buttons.Y = bool(self._report[0] & 0x01)
         state.buttons.B = bool(self._report[0] & 0x02)
         state.buttons.A = bool(self._report[0] & 0x04)
@@ -799,6 +814,63 @@ class PowerAWiredDevice(Device):
         state.buttons.RIGHT = self._report[2] in {0x01, 0x02, 0x03}
         state.buttons.DOWN = self._report[2] in {0x03, 0x04, 0x05}
         state.buttons.LEFT = self._report[2] in {0x05, 0x06, 0x07}
+
+
+class DualShock4Device(Device):
+    def __init__(
+        self,
+        device: usb.core.Device,
+        device_descriptor: DeviceDescriptor = None,
+        debug: bool = False,
+    ):
+        # identify interface index
+        for index, interface in enumerate(device_descriptor.configurations[0].interfaces):
+            if interface.get_class_identifier() == (0x03, 0x00):
+                break
+
+        super().__init__(
+            device,
+            DEVICE_TYPE_PLAYSTATION_DS4,
+            device_descriptor=device_descriptor,
+            interface=index,
+            debug=debug,
+        )
+
+    def _update_state(self, state: State) -> None:
+        state.left_joystick = (
+            (self._report[1] - 128) << 8,  # x
+            (128 - self._report[2]) << 8,  # y
+        )
+        state.right_joystick = (
+            (self._report[3] - 128) << 8,  # x
+            (128 - self._report[4]) << 8,  # y
+        )
+
+        state.buttons.Y = bool(self._report[5] & 0x80)  # Triangle
+        state.buttons.B = bool(self._report[5] & 0x40)  # Circle
+        state.buttons.A = bool(self._report[5] & 0x20)  # X
+        state.buttons.X = bool(self._report[5] & 0x10)  # Square
+
+        # 4-bit BCD for d-pad
+        state.buttons.UP = self._report[5] in {0x07, 0x00, 0x01}
+        state.buttons.RIGHT = self._report[5] in {0x01, 0x02, 0x03}
+        state.buttons.DOWN = self._report[5] in {0x03, 0x04, 0x05}
+        state.buttons.LEFT = self._report[5] in {0x05, 0x06, 0x07}
+
+        state.buttons.L1 = bool(self._report[6] & 0x01)
+        state.buttons.R1 = bool(self._report[6] & 0x02)
+        state.buttons.L2 = bool(self._report[6] & 0x04)
+        state.buttons.R2 = bool(self._report[6] & 0x08)
+        state.buttons.SELECT = bool(self._report[6] & 0x10)  # Share
+        state.buttons.START = bool(self._report[6] & 0x20)  # Options
+        state.buttons.L3 = bool(self._report[6] & 0x40)
+        state.buttons.R3 = bool(self._report[6] & 0x80)
+
+        state.buttons.HOME = bool(self._report[7] & 0x01)  # PS
+        state.buttons.TOUCH_PAD = bool(self._report[7] & 0x02)  # Touch Pad
+
+        state.left_trigger = self._report[8]
+        state.right_trigger = self._report[9]
 
 
 def _create_device(
@@ -817,6 +889,8 @@ def _create_device(
         return Zero2Device(device, device_descriptor=device_descriptor, debug=debug)
     elif device_type == DEVICE_TYPE_POWERA_WIRED:
         return PowerAWiredDevice(device, device_descriptor=device_descriptor, debug=debug)
+    elif device_type == DEVICE_TYPE_PLAYSTATION_DS4:
+        return DualShock4Device(device, device_descriptor=device_descriptor, debug=debug)
     else:
         raise ValueError("Unknown device type")
 
