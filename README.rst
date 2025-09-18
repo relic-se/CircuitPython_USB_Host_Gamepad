@@ -31,6 +31,7 @@ Supports the following devices:
 * `Adafruit SNES Controller <https://www.adafruit.com/product/6285>`_
 * 8BitDo Zero 2 (Wired)
 * PowerA Wired Controller
+* Sony PlayStation DUALSHOCK 4 Controller (Wired)
 
 
 Dependencies
