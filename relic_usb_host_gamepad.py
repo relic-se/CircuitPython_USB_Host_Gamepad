@@ -46,6 +46,7 @@ _MAX_TIMEOUTS = const(99)
 _SEARCH_DELAY = const(1)
 _TRIGGER_THRESHOLD = const(128)
 _JOYSTICK_THRESHOLD = const(8192)
+_DS4_COLORS = (0xFFFFFF, 0x0000FF, 0xFF0000, 0x00FF00, 0xFF00FF)
 
 # USB detected device types
 
@@ -835,6 +836,59 @@ class DualShock4Device(Device):
             interface=index,
             debug=debug,
         )
+
+        self._color = 0
+        self._rumble = 0.0
+        self._flash = 0.0
+
+    def _update_control(self) -> None:
+        msg = bytearray(32)
+        msg[0] = 0x05
+        msg[1] = 0xFF
+        msg[4:6] = bytearray([int(self._rumble * 255) & 0xFF] * 2)
+        msg[6:9] = bytearray([(self._color >> ((2 - i) * 8)) & 0xFF for i in range(3)])
+        msg[9:11] = bytearray([int(self._flash / 2.5 * 255) & 0xFF] * 2)
+        self.write(msg)
+
+    @property
+    def led(self) -> int:
+        return self._led
+
+    @led.setter
+    def led(self, value: int) -> None:
+        if value is None:
+            value = 0
+        self._led = min(max(value, 0), len(_DS4_COLORS))
+        self._color = _DS4_COLORS[self._led]
+        self._update_control()
+
+    @property
+    def color(self) -> int:
+        return self._color
+
+    @color.setter
+    def color(self, value: int) -> None:
+        self._color = value & 0xFFFFFF
+        self._led = 0
+        self._update_control()
+
+    @property
+    def rumble(self) -> float:
+        return self._rumble
+
+    @rumble.setter
+    def rumble(self, value: float) -> None:
+        self._rumble = value
+        self._update_control()
+
+    @property
+    def flash(self) -> float:
+        return self._flash
+
+    @flash.setter
+    def flash(self, value: float) -> None:
+        self._flash = value
+        self._update_control()
 
     def _update_state(self, state: State) -> None:
         state.left_joystick = (
