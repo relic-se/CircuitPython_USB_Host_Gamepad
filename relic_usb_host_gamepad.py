@@ -955,7 +955,10 @@ _failed_devices = []
 
 def _find_device(port: int = None, debug: bool = False) -> Device:  # noqa: PLR0912
     for device in usb.core.find(find_all=True):
-        device_id = (device.idVendor, device.idProduct)
+        try:
+            device_id = (device.idVendor, device.idProduct)
+        except usb.core.USBError:
+            continue
         if (port,) + device_id in _connected_devices or device_id in _failed_devices:
             continue
 
@@ -968,24 +971,25 @@ def _find_device(port: int = None, debug: bool = False) -> Device:  # noqa: PLR0
                 # Board has USB hub, but device is not plugged into the specified port
                 continue
 
-        if debug:
-            print(
-                "gamepad device found" + (f" on port #{port:d}" if port is not None else ""),
-                {
-                    "pid": hex(device.idProduct),
-                    "vid": hex(device.idVendor),
-                    "manufacturer": device.manufacturer,
-                    "product": device.product,
-                    "serial": device.serial_number,
-                    "port": device.port_numbers,
-                },
-            )
-
         try:
+            if debug:
+                print(
+                    "gamepad device found" + (f" on port #{port:d}" if port is not None else ""),
+                    {
+                        "pid": hex(device.idProduct),
+                        "vid": hex(device.idVendor),
+                        "manufacturer": device.manufacturer,
+                        "product": device.product,
+                        "serial": device.serial_number,
+                        "port": device.port_numbers,
+                    },
+                )
+
             device_descriptor = DeviceDescriptor(device)
         except usb.core.USBError as e:
             if debug:
                 print(f"unable to read device descriptor: {str(e)}")
+            _failed_devices.append(device_id)
             continue
 
         if (
