@@ -981,7 +981,13 @@ def _find_device(port: int = None, debug: bool = False) -> Device:  # noqa: PLR0
                 },
             )
 
-        device_descriptor = DeviceDescriptor(device)
+        try:
+            device_descriptor = DeviceDescriptor(device)
+        except usb.core.USBError as e:
+            if debug:
+                print(f"unable to read device descriptor: {str(e)}")
+            continue
+
         if (
             device_type := _get_device_type(
                 device, device_descriptor=device_descriptor, debug=debug
