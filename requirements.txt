@@ -3,4 +3,5 @@
 #
 # SPDX-License-Identifier: MIT
 
-Adafruit-Blinka
+adafruit_usb_host_descriptors
+relic_usb_host_descriptor_parser

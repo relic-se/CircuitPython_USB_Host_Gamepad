@@ -7,7 +7,6 @@ Introduction
     :alt: Documentation Status
 
 
-
 .. image:: https://img.shields.io/discord/327254708534116352.svg
     :target: https://adafru.it/discord
     :alt: Discord
@@ -32,6 +31,8 @@ Supports the following devices:
 * 8BitDo Zero 2 (Wired)
 * PowerA Wired Controller
 * Sony PlayStation DUALSHOCK 4 Controller (Wired)
+* Some HID-compliant Joysticks
+  * Microsoft SideWinder Force Feedback 2
 
 
 Dependencies
