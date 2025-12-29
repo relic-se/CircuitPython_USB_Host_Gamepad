@@ -266,7 +266,7 @@ class Button:
         self._mask = 1 << index
 
     def __get__(self, obj, objtype=None):
-        return obj._pressed & self._mask
+        return bool(obj._pressed & self._mask)
 
     def __set__(self, obj, value: bool):
         if bool(obj._pressed & self._mask) != value:
@@ -390,8 +390,7 @@ class Buttons:
             next(x for i, x in enumerate(self) if self._changed & (1 << i))
         except StopIteration:
             return False
-        finally:
-            return True
+        return True
 
     def reset(self) -> None:
         """Reset the state of all buttons to be released."""
