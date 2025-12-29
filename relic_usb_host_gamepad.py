@@ -409,7 +409,7 @@ class State:
     @property
     def trigger_threshold(self) -> float:
         return (self._trigger_threshold - 1) / 254
-    
+
     @trigger_threshold.setter
     def trigger_threshold(self, value: int | float) -> None:
         if type(value) is float:
@@ -419,7 +419,7 @@ class State:
     @property
     def joystick_threshold(self) -> float:
         return (self._joystick_threshold - 1) / 32766
-    
+
     @joystick_threshold.setter
     def joystick_threshold(self, value: int | float) -> None:
         if type(value) is float:
@@ -429,7 +429,7 @@ class State:
     @property
     def joystick_deadzone(self) -> float:
         return self._joystick_deadzone / 32766
-    
+
     @joystick_deadzone.setter
     def joystick_deadzone(self, value: int | float) -> None:
         if type(value) is float:
@@ -462,18 +462,22 @@ class State:
         self._right_trigger = min(max(value, 0), 255)
         self._buttons.R2 = self._right_trigger >= self._trigger_threshold
 
-    def _apply_deadzone(self, value: int|float) -> tuple[int]:
+    def _apply_deadzone(self, value: int | float) -> tuple[int]:
         if type(value) is float:
             value = int(value * 32767)
         raw_value = value = min(max(value, -32768), 32767)
 
         if value > self._joystick_deadzone:
-            value = int((value - self._joystick_deadzone) * 32767 / (32767 - self._joystick_deadzone))
+            value = int(
+                (value - self._joystick_deadzone) * 32767 / (32767 - self._joystick_deadzone)
+            )
         elif value < -self._joystick_deadzone:
-            value = int((value + self._joystick_deadzone) * -32768 / (self._joystick_deadzone - 32768))
+            value = int(
+                (value + self._joystick_deadzone) * -32768 / (self._joystick_deadzone - 32768)
+            )
         else:
             value = 0
-        
+
         return raw_value, value
 
     @property
@@ -481,7 +485,7 @@ class State:
         return (self._left_joystick_x / 32768, self._left_joystick_y / 32768)
 
     @left_joystick.setter
-    def left_joystick(self, value: tuple[int|float]) -> None:
+    def left_joystick(self, value: tuple[int | float]) -> None:
         if len(value) != 2:
             raise ValueError("value must be in the format of (x, y)")
 
@@ -498,7 +502,7 @@ class State:
         return (self._right_joystick_x / 32768, self._right_joystick_y / 32768)
 
     @right_joystick.setter
-    def right_joystick(self, value: tuple[int|float]) -> None:
+    def right_joystick(self, value: tuple[int | float]) -> None:
         if len(value) != 2:
             raise ValueError("value must be in the format of (x, y)")
 
@@ -987,8 +991,8 @@ class DualShock4Device(Device):
 
         state.buttons.L1 = bool(self._report[6] & 0x01)
         state.buttons.R1 = bool(self._report[6] & 0x02)
-        #state.buttons.L2 = bool(self._report[6] & 0x04)  # handled by analog trigger values
-        #state.buttons.R2 = bool(self._report[6] & 0x08)
+        # state.buttons.L2 = bool(self._report[6] & 0x04)  # handled by analog trigger values
+        # state.buttons.R2 = bool(self._report[6] & 0x08)
         state.buttons.SELECT = bool(self._report[6] & 0x10)  # Share
         state.buttons.START = bool(self._report[6] & 0x20)  # Options
         state.buttons.L3 = bool(self._report[6] & 0x40)
@@ -1264,7 +1268,7 @@ class Gamepad:
         the :const:`BUTTON_L2` or :const:`BUTTON_R2` buttons. Defaults to 0.5.
         """
         return self._state.trigger_threshold
-    
+
     @trigger_threshold.setter
     def trigger_threshold(self, value: int | float) -> None:
         self._state.trigger_threshold = value
@@ -1276,7 +1280,7 @@ class Gamepad:
         :const:`JOYSTICK_RIGHT` buttons. Defaults to 0.25.
         """
         return self._state.joystick_threshold
-    
+
     @joystick_threshold.setter
     def joystick_threshold(self, value: int | float) -> None:
         self._state.joystick_threshold = value
@@ -1287,7 +1291,7 @@ class Gamepad:
         0. All values above the deadzone will be scaled to the full range. Defaults to 0.1.
         """
         return self._state.joystick_deadzone
-    
+
     @joystick_deadzone.setter
     def joystick_deadzone(self, value: int | float) -> None:
         self._state.joystick_deadzone = value
