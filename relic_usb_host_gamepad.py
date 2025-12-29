@@ -100,7 +100,7 @@ _DEVICE_HID_USAGES = (
         DEVICE_TYPE_HID_JOYSTICK,
         adafruit_usb_host_descriptors.USAGE_PAGE_GENERIC_DESKTOP,
         adafruit_usb_host_descriptors.USAGE_JOYSTICK,
-    )
+    ),
 )
 
 DEVICE_NAMES = (
