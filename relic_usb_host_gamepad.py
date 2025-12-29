@@ -111,6 +111,7 @@ DEVICE_NAMES = (
     "Generic XInput",
     "PowerA Wired Controller",
     "PlayStation DUALSHOCK 4 Controller",
+    "HID Joystick",
 )
 """A list of all device names following the appropriate device type id. Useful for print statements.
 """
@@ -1090,10 +1091,13 @@ def _find_device(port: int = None, debug: bool = False) -> Device:  # noqa: PLR0
             _failed_devices.append(device_id)
             continue
         elif debug:
-            print(
-                "device identified:",
-                next((name for i, name in enumerate(DEVICE_NAMES) if i == device_type)),
-            )
+            try:
+                print(
+                    "device identified:",
+                    next((name for i, name in enumerate(DEVICE_NAMES) if i == device_type)),
+                )
+            except StopIteration:
+                print("unknown device name of recognized device type")
 
         try:
             # initialize device specific class
