@@ -987,8 +987,8 @@ class DualShock4Device(Device):
 
         state.buttons.L1 = bool(self._report[6] & 0x01)
         state.buttons.R1 = bool(self._report[6] & 0x02)
-        state.buttons.L2 = bool(self._report[6] & 0x04)
-        state.buttons.R2 = bool(self._report[6] & 0x08)
+        #state.buttons.L2 = bool(self._report[6] & 0x04)  # handled by analog trigger values
+        #state.buttons.R2 = bool(self._report[6] & 0x08)
         state.buttons.SELECT = bool(self._report[6] & 0x10)  # Share
         state.buttons.START = bool(self._report[6] & 0x20)  # Options
         state.buttons.L3 = bool(self._report[6] & 0x40)
