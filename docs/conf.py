@@ -27,6 +27,7 @@ autodoc_mock_imports = [
     "struct",
     "time",
     "usb",
+    "adafruit_usb_host_descriptors",
     "relic_usb_host_descriptor_parser",
 ]
 

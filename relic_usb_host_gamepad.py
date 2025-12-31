@@ -36,6 +36,7 @@ __repo__ = "https://github.com/relic-se/CircuitPython_USB_Host_Gamepad.git"
 import struct
 import time
 
+import adafruit_usb_host_descriptors
 import keypad
 import usb.core
 from micropython import const
@@ -44,8 +45,9 @@ from usb.util import SPEED_HIGH
 
 _MAX_TIMEOUTS = const(99)
 _SEARCH_DELAY = const(1)
-_TRIGGER_THRESHOLD = const(128)
-_JOYSTICK_THRESHOLD = const(8192)
+_DEFAULT_TRIGGER_THRESHOLD = 0.5
+_DEFAULT_JOYSTICK_THRESHOLD = 0.25
+_DEFAULT_JOYSTICK_DEADZONE = 0.1
 _DS4_COLORS = (0xFFFFFF, 0x0000FF, 0xFF0000, 0x00FF00, 0xFF00FF)
 
 # USB detected device types
@@ -74,6 +76,11 @@ DEVICE_TYPE_PLAYSTATION_DS4 = const(6)  # Sony PlayStation DUALSHOCK 4 Controlle
 4 controller.
 """
 
+DEVICE_TYPE_HID_JOYSTICK = const(7)  # (vid:pid vary) Various USB HID Joysticks
+"""The type of a usb joystick device which is HID-compatible.
+"""
+
+
 _DEVICE_TYPES = (
     # (index, vid, pid),
     (DEVICE_TYPE_SWITCH_PRO, 0x057E, 0x2009),
@@ -88,6 +95,15 @@ _DEVICE_CLASSES = (
     (DEVICE_TYPE_XINPUT, 0xFF, 0xFF, 0xFF, 0x5D),
 )
 
+_DEVICE_HID_USAGES = (
+    # (index, usage page id, usage id),
+    (
+        DEVICE_TYPE_HID_JOYSTICK,
+        adafruit_usb_host_descriptors.USAGE_PAGE_GENERIC_DESKTOP,
+        adafruit_usb_host_descriptors.USAGE_JOYSTICK,
+    ),
+)
+
 DEVICE_NAMES = (
     "Unknown",
     "Switch Pro Controller",
@@ -96,6 +112,7 @@ DEVICE_NAMES = (
     "Generic XInput",
     "PowerA Wired Controller",
     "PlayStation DUALSHOCK 4 Controller",
+    "HID Joystick",
 )
 """A list of all device names following the appropriate device type id. Useful for print statements.
 """
@@ -249,7 +266,7 @@ class Button:
         self._mask = 1 << index
 
     def __get__(self, obj, objtype=None):
-        return obj._pressed & self._mask
+        return bool(obj._pressed & self._mask)
 
     def __set__(self, obj, value: bool):
         if bool(obj._pressed & self._mask) != value:
@@ -373,8 +390,7 @@ class Buttons:
             next(x for i, x in enumerate(self) if self._changed & (1 << i))
         except StopIteration:
             return False
-        finally:
-            return True
+        return True
 
     def reset(self) -> None:
         """Reset the state of all buttons to be released."""
@@ -385,7 +401,40 @@ class Buttons:
 class State:
     def __init__(self):
         self._buttons = Buttons()
+        self.trigger_threshold = _DEFAULT_TRIGGER_THRESHOLD
+        self.joystick_threshold = _DEFAULT_JOYSTICK_THRESHOLD
+        self.joystick_deadzone = _DEFAULT_JOYSTICK_DEADZONE
         self.reset()
+
+    @property
+    def trigger_threshold(self) -> float:
+        return (self._trigger_threshold - 1) / 254
+
+    @trigger_threshold.setter
+    def trigger_threshold(self, value: int | float) -> None:
+        if type(value) is float:
+            value = int(value * 255)
+        self._trigger_threshold = min(max(value, 1), 255)
+
+    @property
+    def joystick_threshold(self) -> float:
+        return (self._joystick_threshold - 1) / 32766
+
+    @joystick_threshold.setter
+    def joystick_threshold(self, value: int | float) -> None:
+        if type(value) is float:
+            value = int(value * 32767)
+        self._joystick_threshold = min(max(value, 1), 32767)
+
+    @property
+    def joystick_deadzone(self) -> float:
+        return self._joystick_deadzone / 32766
+
+    @joystick_deadzone.setter
+    def joystick_deadzone(self, value: int | float) -> None:
+        if type(value) is float:
+            value = int(value * 32766)
+        self._joystick_deadzone = min(max(value, 0), 32766)
 
     @property
     def buttons(self) -> Buttons:
@@ -400,7 +449,7 @@ class State:
         if type(value) is float:
             value = int(value * 255)
         self._left_trigger = min(max(value, 0), 255)
-        self._buttons.L2 = self._left_trigger >= _TRIGGER_THRESHOLD
+        self._buttons.L2 = self._left_trigger >= self._trigger_threshold
 
     @property
     def right_trigger(self) -> float:
@@ -411,47 +460,54 @@ class State:
         if type(value) is float:
             value = int(value * 255)
         self._right_trigger = min(max(value, 0), 255)
-        self._buttons.R2 = self._right_trigger >= _TRIGGER_THRESHOLD
+        self._buttons.R2 = self._right_trigger >= self._trigger_threshold
+
+    def _apply_deadzone(self, value: int | float) -> tuple[int]:
+        if type(value) is float:
+            value = int(value * 32767)
+        raw_value = value = min(max(value, -32768), 32767)
+
+        if value > self._joystick_deadzone:
+            value = int(
+                (value - self._joystick_deadzone) * 32767 / (32767 - self._joystick_deadzone)
+            )
+        elif value < -self._joystick_deadzone:
+            value = int(
+                (value + self._joystick_deadzone) * -32768 / (self._joystick_deadzone - 32768)
+            )
+        else:
+            value = 0
+
+        return raw_value, value
 
     @property
-    def left_joystick(self) -> tuple[int]:
+    def left_joystick(self) -> tuple[float]:
         return (self._left_joystick_x / 32768, self._left_joystick_y / 32768)
 
     @left_joystick.setter
-    def left_joystick(self, value: tuple[int]) -> None:
+    def left_joystick(self, value: tuple[int | float]) -> None:
         if len(value) != 2:
             raise ValueError("value must be in the format of (x, y)")
 
-        x, y = value
-        if type(x) is float:
-            x = int(x * 32767)
-        if type(y) is float:
-            y = int(y * 32767)
-        self._left_joystick_x = min(max(x, -32768), 32767)
-        self._left_joystick_y = min(max(y, -32768), 32767)
+        x, self._left_joystick_x = self._apply_deadzone(value[0])
+        y, self._left_joystick_y = self._apply_deadzone(value[1])
 
-        self._buttons.JOYSTICK_RIGHT = self._left_joystick_x >= _JOYSTICK_THRESHOLD
-        self._buttons.JOYSTICK_LEFT = self._left_joystick_x <= -_JOYSTICK_THRESHOLD
-        self._buttons.JOYSTICK_UP = self._left_joystick_y >= _JOYSTICK_THRESHOLD
-        self._buttons.JOYSTICK_DOWN = self._left_joystick_y <= -_JOYSTICK_THRESHOLD
+        self._buttons.JOYSTICK_RIGHT = x >= self._joystick_threshold
+        self._buttons.JOYSTICK_LEFT = x <= -self._joystick_threshold
+        self._buttons.JOYSTICK_UP = y >= self._joystick_threshold
+        self._buttons.JOYSTICK_DOWN = y <= -self._joystick_threshold
 
     @property
-    def right_joystick(self) -> tuple:
+    def right_joystick(self) -> tuple[float]:
         return (self._right_joystick_x / 32768, self._right_joystick_y / 32768)
 
     @right_joystick.setter
-    def right_joystick(self, value: tuple) -> None:
+    def right_joystick(self, value: tuple[int | float]) -> None:
         if len(value) != 2:
             raise ValueError("value must be in the format of (x, y)")
 
-        x, y = value
-        if type(x) is float:
-            x = int(x * 32767)
-        if type(y) is float:
-            y = int(y * 32767)
-
-        self._right_joystick_x = min(max(x, -32768), 32767)
-        self._right_joystick_y = min(max(y, -32768), 32767)
+        self._right_joystick_x = self._apply_deadzone(value[0])[1]
+        self._right_joystick_y = self._apply_deadzone(value[1])[1]
 
     def reset(self) -> None:
         self._buttons.reset()
@@ -463,7 +519,7 @@ class State:
         self._right_joystick_y = 0
 
 
-def _get_device_type(
+def _get_device_type(  # noqa: PLR0912
     device: usb.core.Device, device_descriptor: DeviceDescriptor = None, debug: bool = False
 ) -> int:
     # identify device by id
@@ -476,10 +532,32 @@ def _get_device_type(
                 print("found device type:", device_type)
             return device_type
 
-    # identify device by class
     if device_descriptor is None:
         device_descriptor = DeviceDescriptor(device)
     class_identifier = device_descriptor.get_class_identifier()
+
+    # identify hid device
+    if (
+        class_identifier[2] == adafruit_usb_host_descriptors.INTERFACE_HID
+        and (interface := device_descriptor.configurations[0].interfaces[0]).hid_descriptor
+        is not None
+    ):
+        usage_identifier = (
+            interface.hid_descriptor.usage_page_id,
+            interface.hid_descriptor.usage_id,
+        )
+        if debug:
+            print(
+                "identifying device by hid usage identifier:",
+                [hex(x) for x in usage_identifier],
+            )
+        for device_type, usage_page_id, usage_id in _DEVICE_HID_USAGES:
+            if usage_identifier == (usage_page_id, usage_id):
+                if debug:
+                    print("found device type:", device_type)
+                return device_type
+
+    # identify device by class
     if debug:
         print("identifying device by class identifier:", [hex(x) for x in class_identifier])
     for (
@@ -913,8 +991,8 @@ class DualShock4Device(Device):
 
         state.buttons.L1 = bool(self._report[6] & 0x01)
         state.buttons.R1 = bool(self._report[6] & 0x02)
-        state.buttons.L2 = bool(self._report[6] & 0x04)
-        state.buttons.R2 = bool(self._report[6] & 0x08)
+        # state.buttons.L2 = bool(self._report[6] & 0x04)  # handled by analog trigger values
+        # state.buttons.R2 = bool(self._report[6] & 0x08)
         state.buttons.SELECT = bool(self._report[6] & 0x10)  # Share
         state.buttons.START = bool(self._report[6] & 0x20)  # Options
         state.buttons.L3 = bool(self._report[6] & 0x40)
@@ -927,7 +1005,56 @@ class DualShock4Device(Device):
         state.right_trigger = self._report[9]
 
 
-def _create_device(
+class HIDJoystickDevice(Device):
+    def __init__(
+        self,
+        device: usb.core.Device,
+        device_descriptor: DeviceDescriptor = None,
+        debug: bool = False,
+    ):
+        super().__init__(
+            device, DEVICE_TYPE_HID_JOYSTICK, device_descriptor=device_descriptor, debug=debug
+        )
+
+    @staticmethod
+    def _int8(value):
+        return value - 256 if value > 127 else value
+
+    @staticmethod
+    def _int10(data):
+        value = data[0] | ((data[1] & 3) << 8)
+        return value - 1024 if value > 511 else value
+
+    def _update_state(self, state: State) -> None:
+        # TODO: automatic button mapping depending on pid+vid
+        state.buttons.R1 = bool(self._report[8] & 0x01)  # button 1 (trigger)
+        state.buttons.L1 = bool(self._report[8] & 0x02)  # button 2
+        state.buttons.SELECT = bool(self._report[8] & 0x04)  # button 3
+        state.buttons.START = bool(self._report[8] & 0x08)  # button 4
+        state.buttons.A = bool(self._report[8] & 0x10)  # button 5
+        state.buttons.X = bool(self._report[8] & 0x20)  # button 6
+        state.buttons.Y = bool(self._report[8] & 0x40)  # button 7
+        state.buttons.B = bool(self._report[8] & 0x80)  # button 8
+
+        # 4-bit BCD (hat switch)
+        state.buttons.UP = self._report[7] in {0x07, 0x00, 0x01}
+        state.buttons.RIGHT = self._report[7] in {0x01, 0x02, 0x03}
+        state.buttons.DOWN = self._report[7] in {0x03, 0x04, 0x05}
+        state.buttons.LEFT = self._report[7] in {0x05, 0x06, 0x07}
+
+        state.right_trigger = self._report[6] << 1  # throttle
+
+        state.left_joystick = (
+            self._int10(self._report[1:3]) << 6,  # x
+            self._int10(self._report[3:5]) << 6,  # y
+        )
+        state.right_joystick = (
+            self._int8(self._report[5]) << 10,  # z / twist / rudder
+            0,  # y
+        )
+
+
+def _create_device(  # noqa: PLR0911
     device: usb.core.Device,
     device_type: int,
     device_descriptor: DeviceDescriptor = None,
@@ -945,6 +1072,8 @@ def _create_device(
         return PowerAWiredDevice(device, device_descriptor=device_descriptor, debug=debug)
     elif device_type == DEVICE_TYPE_PLAYSTATION_DS4:
         return DualShock4Device(device, device_descriptor=device_descriptor, debug=debug)
+    elif device_type == DEVICE_TYPE_HID_JOYSTICK:
+        return HIDJoystickDevice(device, device_descriptor=device_descriptor, debug=debug)
     else:
         raise ValueError("Unknown device type")
 
@@ -1002,10 +1131,13 @@ def _find_device(port: int = None, debug: bool = False) -> Device:  # noqa: PLR0
             _failed_devices.append(device_id)
             continue
         elif debug:
-            print(
-                "device identified:",
-                next((name for i, name in enumerate(DEVICE_NAMES) if i == device_type)),
-            )
+            try:
+                print(
+                    "device identified:",
+                    next((name for i, name in enumerate(DEVICE_NAMES) if i == device_type)),
+                )
+            except StopIteration:
+                print("unknown device name of recognized device type")
 
         try:
             # initialize device specific class
@@ -1129,6 +1261,40 @@ class Gamepad:
         tuple with the format (x, y).
         """
         return self._state.right_joystick
+
+    @property
+    def trigger_threshold(self) -> float:
+        """A value from 0.0 to 1.0 which controls the level at which an analog trigger will activate
+        the :const:`BUTTON_L2` or :const:`BUTTON_R2` buttons. Defaults to 0.5.
+        """
+        return self._state.trigger_threshold
+
+    @trigger_threshold.setter
+    def trigger_threshold(self, value: int | float) -> None:
+        self._state.trigger_threshold = value
+
+    @property
+    def joystick_threshold(self) -> float:
+        """A value from 0.0 to 1.0 which controls the level at which the left analog joystick will
+        activate the :const:`JOYSTICK_UP`, :const:`JOYSTICK_DOWN`, :const:`JOYSTICK_LEFT`, or
+        :const:`JOYSTICK_RIGHT` buttons. Defaults to 0.25.
+        """
+        return self._state.joystick_threshold
+
+    @joystick_threshold.setter
+    def joystick_threshold(self, value: int | float) -> None:
+        self._state.joystick_threshold = value
+
+    @property
+    def joystick_deadzone(self) -> float:
+        """A value from 0.0 to 1.0 which controls the area at which an analog joystick is treated as
+        0. All values above the deadzone will be scaled to the full range. Defaults to 0.1.
+        """
+        return self._state.joystick_deadzone
+
+    @joystick_deadzone.setter
+    def joystick_deadzone(self, value: int | float) -> None:
+        self._state.joystick_deadzone = value
 
     def disconnect(self) -> bool:
         """Disconnect from the usb gamepad device if one is currently active.
