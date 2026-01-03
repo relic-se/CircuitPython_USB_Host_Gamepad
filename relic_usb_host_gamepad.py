@@ -392,6 +392,11 @@ class Buttons:
             return False
         return True
 
+    @property
+    def pressed(self) -> bool:
+        """Whether or not any button on the gamepad is pressed."""
+        return bool(self._pressed)
+
     def reset(self) -> None:
         """Reset the state of all buttons to be released."""
         self._pressed = 0
