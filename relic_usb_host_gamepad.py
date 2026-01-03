@@ -386,11 +386,12 @@ class Buttons:
         """Whether or not the state of any buttons has changed since the last :class:`Gamepad`
         device update.
         """
-        try:
-            next(x for i, x in enumerate(self) if self._changed & (1 << i))
-        except StopIteration:
-            return False
-        return True
+        return bool(self._changed)
+
+    @property
+    def pressed(self) -> bool:
+        """Whether or not any button on the gamepad is pressed."""
+        return bool(self._pressed)
 
     def reset(self) -> None:
         """Reset the state of all buttons to be released."""
