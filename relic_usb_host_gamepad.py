@@ -1149,9 +1149,9 @@ def _find_device(port: int = None, debug: bool = False) -> Device:  # noqa: PLR0
 
             _connected_devices.append((port,) + device_id)
             return gamepad_device
-        except ValueError:
+        except ValueError as e:
             if debug:
-                print("failed to initialize device")
+                print(f"failed to initialize device: {str(e)}")
             _failed_devices.append(device_id)
 
 
