@@ -610,7 +610,7 @@ class Device:
         self._interface = self._configuration.interfaces[interface]
         self._in_endpoint = self._interface.in_endpoint
         self._out_endpoint = self._interface.out_endpoint
-        if self._in_endpoint is None or self._out_endpoint is None:
+        if self._in_endpoint is None and self._out_endpoint is None:
             raise ValueError("invalid interface endpoints")
 
         # make sure CircuitPython core is not claiming the device
@@ -625,14 +625,21 @@ class Device:
         device.set_configuration(self._configuration.value)
 
         self._max_packet_size = min(
-            64, max(self._in_endpoint.max_packet_size, self._out_endpoint.max_packet_size)
+            64,
+            max(
+                self._in_endpoint.max_packet_size if self._in_endpoint is not None else 0,
+                self._out_endpoint.max_packet_size if self._out_endpoint is not None else 0,
+            ),
         )
         self._report = bytearray(self._max_packet_size)
         self._previous_report = bytearray(self._max_packet_size)
 
         # Low-speed & Full-speed: max time between polling requests = interval * 1 ms
         # High-speed: max time between polling requests = math.pow(2, bInterval-1) * 125 µs
-        self._interval = max(self._in_endpoint.interval, self._out_endpoint.interval)
+        self._interval = max(
+            self._in_endpoint.interval if self._in_endpoint is not None else 0,
+            self._out_endpoint.interval if self._out_endpoint is not None else 0,
+        )
         if device.speed == SPEED_HIGH:
             self._interval = (2 << (self._interval - 1)) >> 3
         self._timestamp = time.monotonic()
@@ -675,6 +682,9 @@ class Device:
         pass
 
     def write(self, data: bytearray, acknowledge: bool = True) -> bool:
+        if self._out_endpoint is None:
+            return False
+
         try:
             self._device.write(self._out_endpoint.address, data, timeout=self._interval)
             if not acknowledge:
@@ -692,7 +702,11 @@ class Device:
         return False
 
     def read(self) -> int:
-        return self._device.read(self._in_endpoint.address, self._report, timeout=self._interval)
+        return (
+            self._device.read(self._in_endpoint.address, self._report, timeout=self._interval)
+            if self._in_endpoint is not None
+            else 0
+        )
 
     def flush(self) -> None:
         for i in range(8):
