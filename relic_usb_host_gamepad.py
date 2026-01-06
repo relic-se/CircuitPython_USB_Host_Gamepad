@@ -1320,9 +1320,9 @@ class Gamepad:
 
     @property
     def left_joystick_invert_x(self) -> bool:
-        """Whether or not the invert the direction of the X-axis of :prop:`left_joystick`. Also
-        affects :const:`JOYSTICK_LEFT`, and :const:`JOYSTICK_RIGHT` buttons. Changes take effect
-        after the next successful device update. Defaults to `False`.
+        """Whether or not the invert the direction of the X-axis of :attr:`Gamepad.left_joystick`.
+        Also affects :const:`JOYSTICK_LEFT`, and :const:`JOYSTICK_RIGHT` buttons. Changes take
+        effect after the next successful device update. Defaults to `False`.
         """
         return self._state.left_joystick_invert_x
 
@@ -1332,8 +1332,8 @@ class Gamepad:
 
     @property
     def left_joystick_invert_y(self) -> bool:
-        """Whether or not the invert the direction of the Y-axis of :prop:`left_joystick`. Also
-        affects :const:`JOYSTICK_UP`, and :const:`JOYSTICK_DOWN` buttons. Changes take effect
+        """Whether or not the invert the direction of the Y-axis of :attr:`Gamepad.left_joystick`.
+        Also affects :const:`JOYSTICK_UP`, and :const:`JOYSTICK_DOWN` buttons. Changes take effect
         after the next successful device update. Defaults to `False`.
         """
         return self._state.left_joystick_invert_y
@@ -1344,8 +1344,8 @@ class Gamepad:
 
     @property
     def right_joystick_invert_x(self) -> bool:
-        """Whether or not the invert the direction of the X-axis of :prop:`right_joystick`. Changes
-        take effect after the next successful device update. Defaults to `False`.
+        """Whether or not the invert the direction of the X-axis of :attr:`Gamepad.right_joystick`.
+        Changes take effect after the next successful device update. Defaults to `False`.
         """
         return self._state.right_joystick_invert_x
 
@@ -1355,8 +1355,8 @@ class Gamepad:
 
     @property
     def right_joystick_invert_y(self) -> bool:
-        """Whether or not the invert the direction of the Y-axis of :prop:`right_joystick`. Changes
-        take effect after the next successful device update. Defaults to `False`.
+        """Whether or not the invert the direction of the Y-axis of :attr:`Gamepad.right_joystick`.
+        Changes take effect after the next successful device update. Defaults to `False`.
         """
         return self._state.right_joystick_invert_y
 
