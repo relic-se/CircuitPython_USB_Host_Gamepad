@@ -400,6 +400,11 @@ class Buttons:
 
 
 class State:
+    left_joystick_invert_x: bool = False
+    left_joystick_invert_y: bool = False
+    right_joystick_invert_x: bool = False
+    right_joystick_invert_y: bool = False
+
     def __init__(self):
         self._buttons = Buttons()
         self.trigger_threshold = _DEFAULT_TRIGGER_THRESHOLD
@@ -463,10 +468,12 @@ class State:
         self._right_trigger = min(max(value, 0), 255)
         self._buttons.R2 = self._right_trigger >= self._trigger_threshold
 
-    def _apply_deadzone(self, value: int | float) -> tuple[int]:
+    def _apply_deadzone(self, value: int | float, invert: bool = False) -> tuple[int]:
         if type(value) is float:
             value = int(value * 32767)
-        raw_value = value = min(max(value, -32768), 32767)
+        if invert:
+            value *= -1
+        raw_value = value = min(max(value, -32767), 32767)
 
         if value > self._joystick_deadzone:
             value = int(
@@ -474,7 +481,7 @@ class State:
             )
         elif value < -self._joystick_deadzone:
             value = int(
-                (value + self._joystick_deadzone) * -32768 / (self._joystick_deadzone - 32768)
+                (value + self._joystick_deadzone) * -32767 / (self._joystick_deadzone - 32767)
             )
         else:
             value = 0
@@ -483,15 +490,15 @@ class State:
 
     @property
     def left_joystick(self) -> tuple[float]:
-        return (self._left_joystick_x / 32768, self._left_joystick_y / 32768)
+        return (self._left_joystick_x / 32767, self._left_joystick_y / 32767)
 
     @left_joystick.setter
     def left_joystick(self, value: tuple[int | float]) -> None:
         if len(value) != 2:
             raise ValueError("value must be in the format of (x, y)")
 
-        x, self._left_joystick_x = self._apply_deadzone(value[0])
-        y, self._left_joystick_y = self._apply_deadzone(value[1])
+        x, self._left_joystick_x = self._apply_deadzone(value[0], self.left_joystick_invert_x)
+        y, self._left_joystick_y = self._apply_deadzone(value[1], self.left_joystick_invert_y)
 
         self._buttons.JOYSTICK_RIGHT = x >= self._joystick_threshold
         self._buttons.JOYSTICK_LEFT = x <= -self._joystick_threshold
@@ -500,15 +507,15 @@ class State:
 
     @property
     def right_joystick(self) -> tuple[float]:
-        return (self._right_joystick_x / 32768, self._right_joystick_y / 32768)
+        return (self._right_joystick_x / 32767, self._right_joystick_y / 32767)
 
     @right_joystick.setter
     def right_joystick(self, value: tuple[int | float]) -> None:
         if len(value) != 2:
             raise ValueError("value must be in the format of (x, y)")
 
-        self._right_joystick_x = self._apply_deadzone(value[0])[1]
-        self._right_joystick_y = self._apply_deadzone(value[1])[1]
+        self._right_joystick_x = self._apply_deadzone(value[0], self.right_joystick_invert_x)[1]
+        self._right_joystick_y = self._apply_deadzone(value[1], self.right_joystick_invert_y)[1]
 
     def reset(self) -> None:
         self._buttons.reset()
@@ -1310,6 +1317,52 @@ class Gamepad:
     @joystick_deadzone.setter
     def joystick_deadzone(self, value: int | float) -> None:
         self._state.joystick_deadzone = value
+
+    @property
+    def left_joystick_invert_x(self) -> bool:
+        """Whether or not the invert the direction of the X-axis of :attr:`Gamepad.left_joystick`.
+        Also affects :const:`JOYSTICK_LEFT`, and :const:`JOYSTICK_RIGHT` buttons. Changes take
+        effect after the next successful device update. Defaults to `False`.
+        """
+        return self._state.left_joystick_invert_x
+
+    @left_joystick_invert_x.setter
+    def left_joystick_invert_x(self, value: bool) -> None:
+        self._state.left_joystick_invert_x = value
+
+    @property
+    def left_joystick_invert_y(self) -> bool:
+        """Whether or not the invert the direction of the Y-axis of :attr:`Gamepad.left_joystick`.
+        Also affects :const:`JOYSTICK_UP`, and :const:`JOYSTICK_DOWN` buttons. Changes take effect
+        after the next successful device update. Defaults to `False`.
+        """
+        return self._state.left_joystick_invert_y
+
+    @left_joystick_invert_y.setter
+    def left_joystick_invert_y(self, value: bool) -> None:
+        self._state.left_joystick_invert_y = value
+
+    @property
+    def right_joystick_invert_x(self) -> bool:
+        """Whether or not the invert the direction of the X-axis of :attr:`Gamepad.right_joystick`.
+        Changes take effect after the next successful device update. Defaults to `False`.
+        """
+        return self._state.right_joystick_invert_x
+
+    @right_joystick_invert_x.setter
+    def right_joystick_invert_x(self, value: bool) -> None:
+        self._state.right_joystick_invert_x = value
+
+    @property
+    def right_joystick_invert_y(self) -> bool:
+        """Whether or not the invert the direction of the Y-axis of :attr:`Gamepad.right_joystick`.
+        Changes take effect after the next successful device update. Defaults to `False`.
+        """
+        return self._state.right_joystick_invert_y
+
+    @right_joystick_invert_y.setter
+    def right_joystick_invert_y(self, value: bool) -> None:
+        self._state.right_joystick_invert_y = value
 
     def disconnect(self) -> bool:
         """Disconnect from the usb gamepad device if one is currently active.
