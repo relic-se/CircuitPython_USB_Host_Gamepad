@@ -1208,6 +1208,9 @@ class Gamepad:
 
         :return: Whether or not the state of the gamepad was updated.
         """
+        # reset button changes
+        self._state.buttons._changed = 0
+
         if self._device is None and time.monotonic() - self._timestamp >= _SEARCH_DELAY:
             self._device = _find_device(self._port, debug=self._debug)
             if self._device is not None:
