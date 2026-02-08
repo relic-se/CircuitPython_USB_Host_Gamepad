@@ -47,6 +47,31 @@ This is easily achieved by downloading
 or individual libraries can be installed using
 `circup <https://github.com/adafruit/circup>`_.
 
+Installing from PyPI
+=====================
+On supported GNU/Linux systems like the Raspberry Pi, you can install the driver locally `from
+PyPI <https://pypi.org/project/circuitpython-usb-host-descriptor-parser/>`_.
+To install for current user:
+
+.. code-block:: shell
+
+    pip3 install circuitpython-usb-host-gamepad
+
+To install system-wide (this may be required in some cases):
+
+.. code-block:: shell
+
+    sudo pip3 install circuitpython-usb-host-gamepad
+
+To install in a virtual environment in your current project:
+
+.. code-block:: shell
+
+    mkdir project-name && cd project-name
+    python3 -m venv .venv
+    source .env/bin/activate
+    pip3 install circuitpython-usb-host-gamepad
+
 Installing to a Connected CircuitPython Device with Circup
 ==========================================================
 
