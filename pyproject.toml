@@ -48,7 +48,7 @@ classifiers = [
 dynamic = ["dependencies", "optional-dependencies"]
 
 [tool.setuptools]
-py-modules = ["relic_usb_host_gamepad"]
+packages = ["relic_usb_host_gamepad"]
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
