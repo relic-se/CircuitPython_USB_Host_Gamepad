@@ -33,6 +33,7 @@ Supports the following devices:
 * Sony PlayStation DUALSHOCK 4 Controller (Wired)
 * Some HID-compliant Joysticks
   * Microsoft SideWinder Force Feedback 2
+* Supported pygame joystick devices (for use with `Blinka <github.com/FoamyGuy/Blinka_Displayio_PyGameDisplay>`_)
 
 
 Dependencies
