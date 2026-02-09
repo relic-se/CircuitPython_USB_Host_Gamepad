@@ -1,16 +1,19 @@
 # SPDX-FileCopyrightText: 2025 Cooper Dalrymple (@relic-se)
 #
-# SPDX-License-Identifier: GPLv3
+# SPDX-License-Identifier: Unlicense
 from blinka_displayio_pygamedisplay import PyGameDisplay
+
 from relic_usb_host_gamepad import BUTTON_NAMES
-from relic_usb_host_gamepad.pygame import Gamepad, EVENT_TYPES
+from relic_usb_host_gamepad.pygame import EVENT_TYPES, Gamepad
 
 display = PyGameDisplay(
-    width=640, height=480,
+    width=640,
+    height=480,
     caption="PyGame Gamepad Test",
 )
 
 gamepad = Gamepad()
+
 
 def update() -> None:
     for event in gamepad.events:
@@ -21,6 +24,7 @@ def update() -> None:
             )
         )
     gamepad.reset_button_changes()
+
 
 display.event_loop(
     on_time=update,
