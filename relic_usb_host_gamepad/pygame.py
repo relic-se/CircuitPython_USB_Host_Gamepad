@@ -29,7 +29,7 @@ from relic_usb_host_gamepad import (
     BUTTON_Y,
 )
 
-SUPPORTED_EVENT_TYPES = (
+EVENT_TYPES = (
     pygame.JOYBUTTONDOWN,
     pygame.JOYBUTTONUP,
     pygame.JOYAXISMOTION,
@@ -39,7 +39,7 @@ SUPPORTED_EVENT_TYPES = (
 """
 
 # list of supported devices
-SUPPORTED_DEVICE_NAMES = (
+DEVICE_NAMES = (
     "Nintendo Switch Pro Controller",
     "Xbox 360 Controller",
     "USB gamepad",  # Adafruit SNES controller
@@ -53,7 +53,7 @@ SUPPORTED_DEVICE_NAMES = (
 def is_joystick_supported(joystick: pygame.joystick.Joystick | str) -> bool:
     """Determine whether or not a joystick object is compatible with :class:`Gamepad`."""
     name = joystick if isinstance(joystick, str) else joystick.get_name()
-    return name in SUPPORTED_DEVICE_NAMES
+    return name in DEVICE_NAMES
 
 
 # pygame => relic_usb_host_gamepad mapping
@@ -257,7 +257,7 @@ class Gamepad(relic_usb_host_gamepad.Gamepad):
         :return: Whether or not the state of a button was changed.
         :rtype: bool
         """
-        if event.type not in SUPPORTED_EVENT_TYPES:
+        if event.type not in EVENT_TYPES:
             return False
 
         if event.instance_id != self._joystick.get_instance_id():
