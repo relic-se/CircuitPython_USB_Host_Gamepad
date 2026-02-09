@@ -370,6 +370,9 @@ class Buttons:
     def __getitem__(self, index: int) -> bool:
         return getattr(self, BUTTON_NAMES[index])
 
+    def __setitem__(self, index: int, value: bool) -> None:
+        setattr(self, BUTTON_NAMES[index], value)
+
     def __len__(self) -> int:
         return len(BUTTON_NAMES)
 

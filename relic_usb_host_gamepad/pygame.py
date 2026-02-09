@@ -270,7 +270,7 @@ class Gamepad(relic_usb_host_gamepad.Gamepad):
             and self._name in _JOYSTICK_BUTTONS
             and event.button < len(_JOYSTICK_BUTTONS[self._name])
         ):
-            self._state[_JOYSTICK_BUTTONS[self._name][event.button]] = (
+            self._state.buttons[_JOYSTICK_BUTTONS[self._name][event.button]] = (
                 event.type == pygame.JOYBUTTONDOWN
             )
             changed = True
@@ -285,7 +285,7 @@ class Gamepad(relic_usb_host_gamepad.Gamepad):
                 isinstance(axis, int)
                 and (value := int(event.value >= self.trigger_threshold)) != self._axes[event.axis]
             ):
-                self._state[axis] = value
+                self._state.buttons[axis] = value
                 self._axes[event.axis] = value
                 changed = True
             elif (
@@ -300,10 +300,10 @@ class Gamepad(relic_usb_host_gamepad.Gamepad):
                 != self._axes[event.axis]
             ):
                 if self._axes[event.axis] != 0:
-                    self._state[axis[int(self._axes[event.axis] > 0)]] = False
+                    self._state.buttons[axis[int(self._axes[event.axis] > 0)]] = False
                     changed = True
                 if value != 0:
-                    self._state[axis[int(value > 0)]] = True
+                    self._state.buttons[axis[int(value > 0)]] = True
                     changed = True
                 self._axes[event.axis] = value
 
@@ -314,12 +314,14 @@ class Gamepad(relic_usb_host_gamepad.Gamepad):
             and _JOYSTICK_HATS[self._name][event.hat] is not None
         ):
             if self._hats[event.hat] != 0:
-                self._state[
+                self._state.buttons[
                     _JOYSTICK_HATS[self._name][event.hat][int(self._hats[event.hat] > 0)]
                 ] = False
                 changed = True
             if event.value != 0:
-                self._state[_JOYSTICK_HATS[self._name][event.hat][int(event.value > 0)]] = True
+                self._state.buttons[_JOYSTICK_HATS[self._name][event.hat][int(event.value > 0)]] = (
+                    True
+                )
                 changed = True
             self._hats[event.hat] = event.value
 
