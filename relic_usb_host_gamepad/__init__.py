@@ -370,6 +370,9 @@ class Buttons:
     def __getitem__(self, index: int) -> bool:
         return getattr(self, BUTTON_NAMES[index])
 
+    def __setitem__(self, index: int, value: bool) -> None:
+        setattr(self, BUTTON_NAMES[index], value)
+
     def __len__(self) -> int:
         return len(BUTTON_NAMES)
 
@@ -1209,7 +1212,7 @@ class Gamepad:
         :return: Whether or not the state of the gamepad was updated.
         """
         # reset button changes
-        self._state.buttons._changed = 0
+        self._state._buttons._changed = 0
 
         if self._device is None and time.monotonic() - self._timestamp >= _SEARCH_DELAY:
             self._device = _find_device(self._port, debug=self._debug)
