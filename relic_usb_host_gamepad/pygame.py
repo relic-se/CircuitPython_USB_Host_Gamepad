@@ -239,8 +239,7 @@ class Gamepad(relic_usb_host_gamepad.Gamepad):
         :return: Whether or not the state of any buttons was changed.
         :rtype: bool
         """
-        # reset button changes
-        self._state.buttons._changed = 0
+        self.reset_button_changes()
 
         changed = False
         for event in events:
@@ -350,3 +349,9 @@ class Gamepad(relic_usb_host_gamepad.Gamepad):
                     )[0]
 
         return True
+
+    def reset_button_changes(self) -> None:
+        """If processing events directly without using :meth:`update` or :meth:`process_events`,
+        this method will need to be called to ensure that button change states are properly handled.
+        """
+        self._state._buttons._changed = 0
