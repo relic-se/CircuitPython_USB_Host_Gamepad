@@ -266,7 +266,7 @@ class Gamepad(relic_usb_host_gamepad.Gamepad):
         changed = False
 
         if (
-            event.type in set(pygame.JOYBUTTONDOWN, pygame.JOYBUTTONUP)
+            event.type in {pygame.JOYBUTTONDOWN, pygame.JOYBUTTONUP}
             and self._name in _JOYSTICK_BUTTONS
             and event.button < len(_JOYSTICK_BUTTONS[self._name])
         ):
@@ -337,7 +337,7 @@ class Gamepad(relic_usb_host_gamepad.Gamepad):
 
         for i, axis in enumerate(_JOYSTICK_AXES[self._name]):
             if isinstance(axis, tuple):
-                if axis[0] in set(BUTTON_JOYSTICK_LEFT, BUTTON_JOYSTICK_RIGHT):
+                if axis[0] in {BUTTON_JOYSTICK_LEFT, BUTTON_JOYSTICK_RIGHT}:
                     self._state._left_joystick_x = self._apply_deadzone(
                         self._joystick.get_axis(i), axis[0] == BUTTON_JOYSTICK_RIGHT
                     )[0]
