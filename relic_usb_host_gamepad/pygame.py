@@ -218,7 +218,7 @@ class Gamepad(relic_usb_host_gamepad.Gamepad):
         :rtype: bool
         """
         self.update_axes()
-        return self.process_events(pygame.event.get())
+        return self.process_events(pygame.event.get(eventtype=EVENT_TYPES))
 
     def disconnect(self) -> bool:
         """Calls :meth:`pygame.joystick.Joystick.quit`.
