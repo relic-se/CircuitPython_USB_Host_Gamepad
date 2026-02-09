@@ -52,7 +52,7 @@ SUPPORTED_DEVICE_NAMES = (
 
 def is_joystick_supported(joystick: pygame.joystick.Joystick | str) -> bool:
     """Determine whether or not a joystick object is compatible with :class:`Gamepad`."""
-    name = joystick.get_name() if isinstance(joystick, pygame.joystick.Joystick) else joystick
+    name = joystick if isinstance(joystick, str) else joystick.get_name()
     return name in SUPPORTED_DEVICE_NAMES
 
 
@@ -202,7 +202,7 @@ class Gamepad(relic_usb_host_gamepad.Gamepad):
         if id >= pygame.joystick.get_count():
             raise ValueError("Invalid joystick id requested")
 
-        self._joystick = pygame.joystick(id)
+        self._joystick = pygame.joystick.Joystick(id)
         self._name = self._joystick.get_name()
 
         if not is_joystick_supported(self._name):
