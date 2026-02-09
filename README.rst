@@ -32,7 +32,7 @@ Supports the following devices:
 * PowerA Wired Controller
 * Sony PlayStation DUALSHOCK 4 Controller (Wired)
 * Some HID-compliant Joysticks
-* Microsoft SideWinder Force Feedback 2
+    * Microsoft SideWinder Force Feedback 2
 
 
 Dependencies
